@@ -1,10 +1,10 @@
 import express from 'express';
 import {
   fetchAllContacts,
-  createContact,
-  getContactById,
-  updateContact,
-  deleteContact,
+  createContactCtrl,
+  getContactCtrl,
+  updateContactCtrl,
+  deleteContactCtrl,
 } from '../controllers/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 
@@ -14,15 +14,15 @@ const router = express.Router();
 router.get('/', ctrlWrapper(fetchAllContacts));
 
 // Створити новий контакт
-router.post('/', ctrlWrapper(createContact));
+router.post('/', ctrlWrapper(createContactCtrl));
 
 // Отримати контакт по ID
-router.get('/:contactId', ctrlWrapper(getContactById));
+router.get('/:contactId', ctrlWrapper(getContactCtrl));
 
 // Оновити контакт
-router.patch('/:contactId', ctrlWrapper(updateContact));
+router.patch('/:contactId', ctrlWrapper(updateContactCtrl));
 
 // Видалити контакт
-router.delete('/:contactId', ctrlWrapper(deleteContact));
+router.delete('/:contactId', ctrlWrapper(deleteContactCtrl));
 
 export default router;
