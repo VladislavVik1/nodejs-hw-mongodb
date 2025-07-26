@@ -8,11 +8,44 @@ import {
 } from '../services/contacts.js';
 
 export const fetchAllContacts = async (req, res) => {
-  const contacts = await getAllContacts();
+  const {
+    page = 1,
+    perPage = 10,
+    sortBy = 'name',
+    sortOrder = 'asc',
+    type,
+    isFavourite,
+  } = req.query;
+
+  // Формуємо фільтр
+  const filter = {};
+  if (type) filter.contactType = type;
+  if (isFavourite !== undefined) filter.isFavourite = isFavourite === 'true';
+
+  // Отримуємо загальну кількість елементів
+  const totalItems = await getAllContacts({ filter, countOnly: true });
+
+  // Отримуємо поточну сторінку з параметрами пагінації та сортування
+  const contacts = await getAllContacts({
+    filter,
+    skip: (page - 1) * perPage,
+    limit: Number(perPage),
+    sortBy,
+    sortOrder,
+  });
+
   res.status(200).json({
     status: 200,
-    message: 'Contacts retrieved successfully',
-    data: contacts,
+    message: 'Successfully found contacts!',
+    data: {
+      data: contacts,
+      page: Number(page),
+      perPage: Number(perPage),
+      totalItems,
+      totalPages: Math.ceil(totalItems / perPage),
+      hasPreviousPage: Number(page) > 1,
+      hasNextPage: Number(page) * Number(perPage) < totalItems,
+    },
   });
 };
 
