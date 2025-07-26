@@ -1,22 +1,22 @@
 const Joi = require("joi");
 
-const contactAddSchema = Joi.object({
-  name: Joi.string().min(3).max(20).required(),
+const addContactSchema = Joi.object({
+  name: Joi.string().min(3).max(30).required(),
   email: Joi.string().email().required(),
-  phone: Joi.string().min(3).max(20).required(),
-  contactType: Joi.string().valid("friend", "work", "family", "other").required(),
-  isFavourite: Joi.boolean()
+  phone: Joi.string().min(7).max(20).required(),
+  isFavourite: Joi.boolean().optional(),
+  contactType: Joi.string().valid("personal", "work", "other").optional(),
 });
 
-const contactUpdateSchema = Joi.object({
-  name: Joi.string().min(3).max(20),
+const updateContactSchema = Joi.object({
+  name: Joi.string().min(3).max(30),
   email: Joi.string().email(),
-  phone: Joi.string().min(3).max(20),
-  contactType: Joi.string().valid("friend", "work", "family", "other"),
-  isFavourite: Joi.boolean()
-}).min(1); // не можна пустий запит
+  phone: Joi.string().min(7).max(20),
+  isFavourite: Joi.boolean(),
+  contactType: Joi.string().valid("personal", "work", "other"),
+}).min(1); // потрібно хоча б одне поле
 
 module.exports = {
-  contactAddSchema,
-  contactUpdateSchema
+  addContactSchema,
+  updateContactSchema,
 };
