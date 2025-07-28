@@ -4,8 +4,8 @@
     "description": "Домашнє завдання №3 — CRUD API з MongoDB",
     "type": "module",
     "main": "src/server.js",
-    "scripts": {
-  "start": "node server.js",
+   "scripts": {
+  "start": "node src/server.js",
   "dev": "nodemon src/server.js",
   "lint": "eslint ."
 },
