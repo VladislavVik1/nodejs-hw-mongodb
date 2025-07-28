@@ -4,26 +4,26 @@
     "description": "Домашнє завдання №3 — CRUD API з MongoDB",
     "type": "module",
     "main": "src/server.js",
-   "scripts": {
-  "start": "node src/server.js",
-  "dev": "nodemon src/server.js",
-  "lint": "eslint ."
-},
+    "scripts": {
+        "start": "node src/server.js",
+        "dev": "nodemon src/server.js",
+        "lint": "eslint ."
+    },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "dependencies": {
-      "cors": "^2.8.5",
-      "dotenv": "^16.6.1",
-      "express": "^4.21.2",
-      "http-errors": "^2.0.0",
-      "mongodb": "^6.17.0",
-      "mongoose": "^8.16.4",
-      "pino-http": "^9.0.0"
+        "cors": "^2.8.5",
+        "dotenv": "^16.6.1",
+        "express": "^4.21.2",
+        "http-errors": "^2.0.0",
+        "joi": "^17.13.3",
+        "mongodb": "^6.17.0",
+        "mongoose": "^8.16.4",
+        "pino-http": "^9.0.0"
     },
     "devDependencies": {
-      "eslint": "^8.56.0",
-      "nodemon": "^3.1.0"
+        "eslint": "^8.56.0",
+        "nodemon": "^3.1.0"
     }
-  }
-  
+}
