@@ -1,6 +1,11 @@
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import createHttpError from 'http-errors';
+
 import User from '../models/user.js';
+import Session from '../models/session.js';
+
+const JWT_SECRET = process.env.JWT_SECRET; // 🔹 Получаем из Render Env vars
 
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -29,12 +34,6 @@ export const register = async (req, res) => {
     },
   });
 };
-import jwt from 'jsonwebtoken';
-import Session from '../models/session.js';
-
-import Setting from '../models/setting.js';
-
-const { value: JWT_SECRET } = await Setting.findOne({ key: 'JWT_SECRET' });
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
@@ -76,12 +75,13 @@ export const login = async (req, res) => {
 
   res.status(200).json({
     status: 'success',
-    message: 'Successfully logged in an user!',
+    message: 'Successfully logged in a user!',
     data: {
       accessToken,
     },
   });
 };
+
 export const refresh = async (req, res) => {
   const { refreshToken } = req.cookies;
 
@@ -134,6 +134,7 @@ export const refresh = async (req, res) => {
     },
   });
 };
+
 export const logout = async (req, res) => {
   const { refreshToken } = req.cookies;
 
