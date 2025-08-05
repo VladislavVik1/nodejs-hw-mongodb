@@ -1,5 +1,7 @@
 const express = require("express");
+import authenticate from '../middlewares/authenticate.js';
 const router = express.Router();
+router.use(authenticate);
 const ctrl = require("../../controllers/contacts.controller");
 const validateBody = require("../../middlewares/validateBody");
 const { addContactSchema, updateContactSchema } = require("../../schemas/contactSchemas");

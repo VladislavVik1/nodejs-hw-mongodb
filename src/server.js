@@ -4,7 +4,9 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import pino from 'pino-http';
 
+import cookieParser from 'cookie-parser';
 import contactsRouter from './routes/contactsRouter.js';
+import authRouter from './routes/auth.js';
 import { handleError } from './middlewares/handleError.js';
 import { notFound } from './middlewares/notFound.js';
 
@@ -18,8 +20,10 @@ const DB_URI = process.env.DB_URI;
 app.use(cors());
 app.use(pino());
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
+app.use('/auth', authRouter);
 app.use('/contacts', contactsRouter);
 
 // Not found
