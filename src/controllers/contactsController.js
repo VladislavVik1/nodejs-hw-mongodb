@@ -2,7 +2,7 @@ import { getAllContacts, getContactById } from '../services/contacts.js';
 
 export const fetchAllContacts = async (req, res, next) => {
   try {
-    const contacts = await getAllContacts();
+    const contacts = await getAllContacts({ filter: { userId: req.user._id } });
     res.status(200).json({
       status: 200,
       message: 'Successfully found contacts!',
@@ -16,7 +16,7 @@ export const fetchAllContacts = async (req, res, next) => {
 export const fetchContactById = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const contact = await getContactById(contactId);
+    const contact = await getContactById(contactId, req.user._id);
 
     if (!contact) {
       return res.status(404).json({ message: 'Contact not found' });
