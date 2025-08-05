@@ -32,7 +32,9 @@ export const register = async (req, res) => {
 import jwt from 'jsonwebtoken';
 import Session from '../models/session.js';
 
-const JWT_SECRET = process.env.JWT_SECRET;
+import Setting from '../models/setting.js';
+
+const { value: JWT_SECRET } = await Setting.findOne({ key: 'JWT_SECRET' });
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
