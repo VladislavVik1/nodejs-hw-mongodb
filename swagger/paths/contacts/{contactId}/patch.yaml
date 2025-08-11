@@ -1,0 +1,47 @@
+tags:
+  - Contacts
+summary: Оновити контакт
+operationId: updateContact
+description: Оновлює контакт. Підтримує JSON або multipart/form-data (оновлення фото).
+security:
+  - bearerAuth: []
+parameters:
+  - name: contactId
+    in: path
+    required: true
+    schema: { type: string }
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: ../../components/schemas/ContactUpdate.yaml
+    multipart/form-data:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+          email:
+            type: string
+            format: email
+          phone:
+            type: string
+          isFavourite:
+            type: boolean
+          contactType:
+            type: string
+          photo:
+            type: string
+            format: binary
+responses:
+  '200':
+    description: Оновлено
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/Contact.yaml
+  '404':
+    description: Contact not found
+  '401':
+    description: Unauthorized
