@@ -4,10 +4,13 @@ import createHttpError from 'http-errors';
 
 import User from '../models/user.js';
 import Session from '../models/session.js';
+import { sendMail } from '../libs/mailer.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
-const ACCESS_EXPIRES_MIN = 15; // хвилин
-const REFRESH_EXPIRES_DAYS = 30; // днів
+const APP_DOMAIN = (process.env.APP_DOMAIN || 'http://localhost:3000').replace(/\/$/, '');
+
+const ACCESS_EXPIRES_MIN = 15;
+const REFRESH_EXPIRES_DAYS = 30;
 
 const signAccess = (payload) =>
   jwt.sign(payload, JWT_SECRET, { expiresIn: `${ACCESS_EXPIRES_MIN}m` });
@@ -21,7 +24,6 @@ export const register = async (req, res) => {
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    // ВАЖЛИВО: 409 через createHttpError, як вимагалось
     throw createHttpError(409, 'Email in use');
   }
 
@@ -43,7 +45,6 @@ export const register = async (req, res) => {
     refreshTokenValidUntil,
   });
 
-  // кука з рефрешем (SameSite=None; Secure — під прод, httpOnly)
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: true,
@@ -62,14 +63,10 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
-  if (!user) {
-    throw createHttpError(401, 'Email or password is wrong');
-  }
+  if (!user) throw createHttpError(401, 'Email or password is wrong');
 
   const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    throw createHttpError(401, 'Email or password is wrong');
-  }
+  if (!isMatch) throw createHttpError(401, 'Email or password is wrong');
 
   const accessToken = signAccess({ id: user._id });
   const refreshToken = signRefresh({ id: user._id });
@@ -78,9 +75,7 @@ export const login = async (req, res) => {
   const accessTokenValidUntil = new Date(now.getTime() + ACCESS_EXPIRES_MIN * 60 * 1000);
   const refreshTokenValidUntil = new Date(now.getTime() + REFRESH_EXPIRES_DAYS * 24 * 60 * 60 * 1000);
 
-  // одна активна сесія на користувача (опціонально)
   await Session.deleteMany({ userId: user._id });
-
   await Session.create({
     userId: user._id,
     accessToken,
@@ -105,9 +100,7 @@ export const login = async (req, res) => {
 // POST /api/auth/refresh
 export const refresh = async (req, res) => {
   const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
-  if (!refreshToken) {
-    throw createHttpError(401, 'No refresh token');
-  }
+  if (!refreshToken) throw createHttpError(401, 'No refresh token');
 
   let payload;
   try {
@@ -117,9 +110,7 @@ export const refresh = async (req, res) => {
   }
 
   const session = await Session.findOne({ refreshToken, userId: payload.id });
-  if (!session) {
-    throw createHttpError(401, 'Session not found');
-  }
+  if (!session) throw createHttpError(401, 'Session not found');
 
   if (session.refreshTokenValidUntil < new Date()) {
     await Session.findByIdAndDelete(session._id);
@@ -137,14 +128,10 @@ export const refresh = async (req, res) => {
 // POST /api/auth/logout
 export const logout = async (req, res) => {
   const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
-  if (!refreshToken) {
-    throw createHttpError(401, 'No refresh token');
-  }
+  if (!refreshToken) throw createHttpError(401, 'No refresh token');
 
   const session = await Session.findOne({ refreshToken });
-  if (!session) {
-    throw createHttpError(401, 'Session not found');
-  }
+  if (!session) throw createHttpError(401, 'Session not found');
 
   await Session.findByIdAndDelete(session._id);
 
@@ -155,4 +142,60 @@ export const logout = async (req, res) => {
   });
 
   res.status(204).end();
+};
+
+// POST /api/auth/send-reset-email
+export const sendResetEmail = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) throw createHttpError(404, 'User not found!');
+
+  const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '5m' });
+  const resetUrl = `${APP_DOMAIN}/reset-password?token=${encodeURIComponent(token)}`;
+
+  try {
+    await sendMail({
+      to: email,
+      subject: 'Reset your password',
+      text: `Open this link within 5 minutes: ${resetUrl}`,
+      html: `<p>Щоб скинути пароль, перейдіть за посиланням (дійсне 5 хв):</p>
+             <p><a href="${resetUrl}" target="_blank" rel="noopener">${resetUrl}</a></p>`,
+    });
+  } catch {
+    throw createHttpError(500, 'Failed to send the email, please try again later.');
+  }
+
+  res.status(200).json({
+    status: 200,
+    message: 'Reset password email has been successfully sent.',
+    data: {},
+  });
+};
+
+// POST /api/auth/reset-pwd
+export const resetPassword = async (req, res) => {
+  const { token, password } = req.body;
+
+  let payload;
+  try {
+    payload = jwt.verify(token, JWT_SECRET);
+  } catch {
+    throw createHttpError(401, 'Token is expired or invalid.');
+  }
+
+  const user = await User.findOne({ email: payload.email });
+  if (!user) throw createHttpError(404, 'User not found!');
+
+  const hash = await bcrypt.hash(password, 10);
+  user.password = hash;
+  await user.save();
+
+  await Session.deleteMany({ userId: user._id });
+
+  res.status(200).json({
+    status: 200,
+    message: 'Password has been successfully reset.',
+    data: {},
+  });
 };
