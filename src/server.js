@@ -3,8 +3,8 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import pino from 'pino-http';
-
 import cookieParser from 'cookie-parser';
+
 import contactsRouter from './routes/contactsRouter.js';
 import authRouter from './routes/auth.js';
 import { handleError } from './middlewares/handleError.js';
@@ -14,22 +14,17 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_URI = process.env.DB_URI;
+const DB_URI = process.env.DB_URI || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/hw5';
 
-// Middleware
-app.use(cors());
 app.use(pino());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
-app.use('/auth', authRouter);
-app.use('/contacts', contactsRouter);
+app.use('/api/contacts', contactsRouter);
+app.use('/api/auth', authRouter);
 
-// Not found
 app.use(notFound);
-
-// Global error handler
 app.use(handleError);
 
 // Connect DB & start server
