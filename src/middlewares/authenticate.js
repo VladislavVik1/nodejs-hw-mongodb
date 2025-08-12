@@ -3,32 +3,32 @@ import createHttpError from 'http-errors';
 import Session from '../models/session.js';
 import User from '../models/user.js';
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
 
 const authenticate = async (req, res, next) => {
   const authHeader = req.headers.authorization || '';
-
   if (!authHeader.startsWith('Bearer ')) {
     return next(createHttpError(401, 'Not authorized'));
   }
 
-  const token = authHeader.replace('Bearer ', '');
+  const token = authHeader.slice(7);
 
   let payload;
   try {
-    payload = jwt.verify(token, JWT_SECRET);
-  } catch (err) {
-    return next(createHttpError(401, 'Invalid or expired access token'));
+    payload = jwt.verify(token, JWT_SECRET); // очікуємо payload.userId
+  } catch {
+    return next(createHttpError(401, 'Not authorized'));
   }
 
-  const session = await Session.findOne({ accessToken: token });
+  // Прив’язка токена до юзера + перевірка TTL
+  const session = await Session.findOne({ userId: payload.userId, accessToken: token });
   if (!session || session.accessTokenValidUntil < new Date()) {
-    return next(createHttpError(401, 'Access token expired'));
+    return next(createHttpError(401, 'Not authorized'));
   }
 
   const user = await User.findById(payload.userId);
   if (!user) {
-    return next(createHttpError(401, 'User not found'));
+    return next(createHttpError(401, 'Not authorized'));
   }
 
   req.user = user;
