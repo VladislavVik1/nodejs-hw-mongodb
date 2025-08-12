@@ -11,15 +11,15 @@ import { addContactSchema, updateContactSchema } from '../schemas/contactSchemas
 import validateBody from '../middlewares/validateBody.js';
 import isValidId from '../middlewares/isValidId.js';
 
-// NEW: мидлвары для загрузки фото
+// Мидлвары для загрузки фото
 import { uploadPhoto, uploadToCloudinary } from '../middlewares/uploadPhoto.js';
 
 const router = express.Router();
 
-// Отримати всі контакти
+// GET /contacts
 router.get('/', ctrlWrapper(fetchAllContacts));
 
-// Створити новий контакт (с поддержкой фото)
+// POST /contacts (с поддержкой фото)
 router.post(
   '/',
   uploadPhoto,               // принимает multipart/form-data
@@ -28,10 +28,10 @@ router.post(
   ctrlWrapper(createContactCtrl)
 );
 
-// Отримати контакт по ID
+// GET /contacts/:contactId
 router.get('/:contactId', isValidId, ctrlWrapper(getContactCtrl));
 
-// Оновити контакт (с поддержкой фото)
+// PATCH /contacts/:contactId (с поддержкой фото)
 router.patch(
   '/:contactId',
   isValidId,
@@ -41,7 +41,7 @@ router.patch(
   ctrlWrapper(updateContactCtrl)
 );
 
-// Видалити контакт
+// DELETE /contacts/:contactId
 router.delete('/:contactId', isValidId, ctrlWrapper(deleteContactCtrl));
 
 export default router;

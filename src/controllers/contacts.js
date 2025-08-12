@@ -8,26 +8,32 @@ import {
 } from '../services/contacts.js';
 
 export const fetchAllContacts = async (req, res) => {
-  const {
-    page = 1,
-    perPage = 10,
-    sortBy = 'name',
-    sortOrder = 'asc',
-    type,
-    isFavourite,
-  } = req.query;
+  // Явно приводим к числам и задаем дефолты
+  const pageNum = Math.max(1, Number(req.query.page ?? 1));
+  const perPageNum = Math.min(100, Math.max(1, Number(req.query.perPage ?? 10)));
+
+  // Контроль сортировки
+  const allowedSort = new Set(['name', 'createdAt', 'updatedAt']);
+  const sortBy = allowedSort.has(req.query.sortBy) ? req.query.sortBy : 'name';
+  const sortOrder = req.query.sortOrder === 'desc' ? 'desc' : 'asc';
+
+  const type = req.query.type;
+  const isFavouriteRaw = req.query.isFavourite;
 
   const filter = { userId: req.user._id };
-
   if (type) filter.contactType = type;
-  if (isFavourite !== undefined) filter.isFavourite = isFavourite === 'true';
+  if (typeof isFavouriteRaw !== 'undefined') {
+    filter.isFavourite = String(isFavouriteRaw) === 'true';
+  }
+
+  const skip = (pageNum - 1) * perPageNum;
+  const limit = perPageNum;
 
   const totalItems = await getAllContacts({ filter, countOnly: true });
-
   const contacts = await getAllContacts({
     filter,
-    skip: (page - 1) * perPage,
-    limit: Number(perPage),
+    skip,
+    limit,
     sortBy,
     sortOrder,
   });
@@ -36,13 +42,13 @@ export const fetchAllContacts = async (req, res) => {
     status: 200,
     message: 'Successfully found contacts!',
     data: {
-      data: contacts,
-      page: Number(page),
-      perPage: Number(perPage),
+      items: contacts,
+      page: pageNum,
+      perPage: perPageNum,
       totalItems,
-      totalPages: Math.ceil(totalItems / perPage),
-      hasPreviousPage: Number(page) > 1,
-      hasNextPage: Number(page) * Number(perPage) < totalItems,
+      totalPages: Math.ceil(totalItems / perPageNum),
+      hasPreviousPage: pageNum > 1,
+      hasNextPage: pageNum * perPageNum < totalItems,
     },
   });
 };
@@ -105,5 +111,5 @@ export const deleteContactCtrl = async (req, res) => {
 
   if (!deleted) throw createError(404, 'Contact not found');
 
-  res.status(204).send();
+  res.status(204).end();
 };

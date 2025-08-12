@@ -15,12 +15,12 @@ const authenticate = async (req, res, next) => {
 
   let payload;
   try {
-    payload = jwt.verify(token, JWT_SECRET); // очікуємо payload.userId
+    payload = jwt.verify(token, JWT_SECRET); // ожидаем payload.userId
   } catch {
     return next(createHttpError(401, 'Not authorized'));
   }
 
-  // Прив’язка токена до юзера + перевірка TTL
+  // Привязка токена к пользователю + проверка TTL
   const session = await Session.findOne({ userId: payload.userId, accessToken: token });
   if (!session || session.accessTokenValidUntil < new Date()) {
     return next(createHttpError(401, 'Not authorized'));

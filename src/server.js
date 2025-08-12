@@ -23,13 +23,22 @@ const DB_URI =
   process.env.MONGODB_URI ||
   'mongodb://127.0.0.1:27017/hw5';
 
-app.set('trust proxy', 1); 
+app.set('trust proxy', 1); // важно для secure cookies за прокси
 
-=======
-/* ---------- Swagger UI ---------- */
+/* ---------- Middlewares ---------- */
+app.use(pino());
+app.use(
+  cors({
+    origin: true, // на проде можно ограничить доменом фронта
+    credentials: true,
+  })
+);
+app.use(express.json());
+app.use(cookieParser());
+
+/* ---------- Swagger UI (optional) ---------- */
 let swaggerJson = null;
 const swaggerPath = path.resolve('./docs/swagger.json');
-
 if (fs.existsSync(swaggerPath)) {
   try {
     swaggerJson = JSON.parse(fs.readFileSync(swaggerPath, 'utf-8'));
@@ -42,27 +51,10 @@ if (fs.existsSync(swaggerPath)) {
   console.warn('ℹ️  docs/swagger.json not found. Run "npm run build-docs" to generate it.');
 }
 
-/* ---------- Middlewares ---------- */
-
-app.use(pino());
-app.use(
-  cors({
-    origin: true, // на проде можно сузить до вашего фронтенд-домена
-    credentials: true,
-  })
-);
-app.use(express.json());
-app.use(cookieParser());
-
-
-// без /api і з авторизацією на контактах
+/* ---------- Routes ---------- */
+// без /api и с авторизацией на контактах
 app.use('/auth', authRouter);
 app.use('/contacts', authenticate, contactsRouter);
-=======
-/* ---------- Routes ---------- */
-app.use('/api/contacts', contactsRouter);
-app.use('/api/auth', authRouter);
-
 
 /* ---------- 404 & Error handlers ---------- */
 app.use(notFound);
@@ -84,3 +76,5 @@ mongoose
     console.error('❌ Database connection error:', error.message);
     process.exit(1);
   });
+
+export default app;
