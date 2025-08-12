@@ -1,27 +1,47 @@
 import express from 'express';
-import authenticate from '../middlewares/authenticate.js';
 import {
-  getAllContacts,
-  getContactById,
-  addContact,
-  deleteContact,
-  updateContact,
-} from '../../controllers/contacts.controller.js';
-import validateBody from '../../middlewares/validateBody.js';
-import isValidId from '../../middlewares/isValidId.js';
-import {
-  addContactSchema,
-  updateContactSchema,
-} from '../../schemas/contactSchemas.js';
+  fetchAllContacts,
+  createContactCtrl,
+  getContactCtrl,
+  updateContactCtrl,
+  deleteContactCtrl,
+} from '../controllers/contacts.js';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import { addContactSchema, updateContactSchema } from '../schemas/contactSchemas.js';
+import validateBody from '../middlewares/validateBody.js';
+import isValidId from '../middlewares/isValidId.js';
+
+// NEW: миддлвары для загрузки фото
+import { uploadPhoto, uploadToCloudinary } from '../middlewares/uploadPhoto.js';
 
 const router = express.Router();
 
-router.use(authenticate);
+// Отримати всі контакти
+router.get('/', ctrlWrapper(fetchAllContacts));
 
-router.get('/', getAllContacts);
-router.get('/:contactId', isValidId, getContactById);
-router.post('/', validateBody(addContactSchema), addContact);
-router.delete('/:contactId', isValidId, deleteContact);
-router.patch('/:contactId', isValidId, validateBody(updateContactSchema), updateContact);
+// Створити новий контакт (с фото)
+router.post(
+  '/',
+  uploadPhoto,
+  uploadToCloudinary,
+  validateBody(addContactSchema),
+  ctrlWrapper(createContactCtrl)
+);
+
+// Отримати контакт по ID
+router.get('/:contactId', isValidId, ctrlWrapper(getContactCtrl));
+
+// Оновити контакт (с фото)
+router.patch(
+  '/:contactId',
+  isValidId,
+  uploadPhoto,
+  uploadToCloudinary,
+  validateBody(updateContactSchema),
+  ctrlWrapper(updateContactCtrl)
+);
+
+// Видалити контакт
+router.delete('/:contactId', isValidId, ctrlWrapper(deleteContactCtrl));
 
 export default router;
