@@ -9,6 +9,7 @@ import contactsRouter from './routes/contactsRouter.js';
 import authRouter from './routes/auth.js';
 import { handleError } from './middlewares/handleError.js';
 import { notFound } from './middlewares/notFound.js';
+import authenticate from './middlewares/authenticate.js';
 
 dotenv.config();
 
@@ -16,13 +17,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_URI = process.env.DB_URI || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/hw5';
 
+app.set('trust proxy', 1); // важно для secure cookies за прокси
+
 app.use(pino());
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use('/api/contacts', contactsRouter);
-app.use('/api/auth', authRouter);
+// без /api
+app.use('/auth', authRouter);
+app.use('/contacts', authenticate, contactsRouter);
 
 app.use(notFound);
 app.use(handleError);

@@ -13,19 +13,19 @@ import isValidId from '../middlewares/isValidId.js';
 
 const router = express.Router();
 
-// Отримати всі контакти
+// GET /contacts
 router.get('/', ctrlWrapper(fetchAllContacts));
 
-// Створити новий контакт
+// POST /contacts
 router.post('/', validateBody(addContactSchema), ctrlWrapper(createContactCtrl));
 
-// Отримати контакт по ID
+// GET /contacts/:contactId
 router.get('/:contactId', isValidId, ctrlWrapper(getContactCtrl));
 
-// Оновити контакт
+// PATCH /contacts/:contactId
 router.patch('/:contactId', isValidId, validateBody(updateContactSchema), ctrlWrapper(updateContactCtrl));
 
-// Видалити контакт
+// DELETE /contacts/:contactId
 router.delete('/:contactId', isValidId, ctrlWrapper(deleteContactCtrl));
 
 export default router;

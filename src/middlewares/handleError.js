@@ -1,8 +1,10 @@
 export const handleError = (err, req, res, next) => {
-  const { status = 500, message = 'Internal Server Error' } = err;
+  // Mongo duplicate key (e-mail уникален)
+  if (err?.code === 11000) {
+    return res.status(409).json({ status: 'error', message: 'Email in use' });
+  }
 
-  res.status(status).json({
-    status: 'error',
-    message,
-  });
+  const status = err.status || 500;
+  const message = err.message || 'Internal Server Error';
+  res.status(status).json({ status: 'error', message });
 };
