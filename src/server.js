@@ -12,6 +12,7 @@ import contactsRouter from './routes/contactsRouter.js';
 import authRouter from './routes/auth.js';
 import { handleError } from './middlewares/handleError.js';
 import { notFound } from './middlewares/notFound.js';
+import authenticate from './middlewares/authenticate.js';
 
 dotenv.config();
 
@@ -22,6 +23,9 @@ const DB_URI =
   process.env.MONGODB_URI ||
   'mongodb://127.0.0.1:27017/hw5';
 
+app.set('trust proxy', 1); 
+
+=======
 /* ---------- Swagger UI ---------- */
 let swaggerJson = null;
 const swaggerPath = path.resolve('./docs/swagger.json');
@@ -39,6 +43,7 @@ if (fs.existsSync(swaggerPath)) {
 }
 
 /* ---------- Middlewares ---------- */
+
 app.use(pino());
 app.use(
   cors({
@@ -49,9 +54,15 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+
+// без /api і з авторизацією на контактах
+app.use('/auth', authRouter);
+app.use('/contacts', authenticate, contactsRouter);
+=======
 /* ---------- Routes ---------- */
 app.use('/api/contacts', contactsRouter);
 app.use('/api/auth', authRouter);
+
 
 /* ---------- 404 & Error handlers ---------- */
 app.use(notFound);
