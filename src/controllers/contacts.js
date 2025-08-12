@@ -54,10 +54,17 @@ export const fetchAllContacts = async (req, res) => {
 };
 
 export const createContactCtrl = async (req, res) => {
-  const newContact = await createContact({
+  const payload = {
     ...req.body,
     userId: req.user._id,
-  });
+  };
+
+  // Если пришло фото из Cloudinary — добавляем в payload
+  if (req.photoUrl) {
+    payload.photo = req.photoUrl;
+  }
+
+  const newContact = await createContact(payload);
 
   res.status(201).json({
     status: 201,
@@ -81,7 +88,13 @@ export const getContactCtrl = async (req, res) => {
 
 export const updateContactCtrl = async (req, res) => {
   const { contactId } = req.params;
-  const updated = await updateContactById(contactId, req.body, req.user._id);
+
+  const payload = { ...req.body };
+  if (req.photoUrl) {
+    payload.photo = req.photoUrl;
+  }
+
+  const updated = await updateContactById(contactId, payload, req.user._id);
 
   if (!updated) throw createError(404, 'Contact not found');
 
