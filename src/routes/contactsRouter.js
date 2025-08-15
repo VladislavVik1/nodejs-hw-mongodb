@@ -10,35 +10,31 @@ import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { addContactSchema, updateContactSchema } from '../schemas/contactSchemas.js';
 import validateBody from '../middlewares/validateBody.js';
 import isValidId from '../middlewares/isValidId.js';
-
-// Мидлвары для загрузки фото
-import { uploadPhoto, uploadToCloudinary } from '../middlewares/uploadPhoto.js';
+import upload from '../middlewares/upload.js'; // <-- додаємо
 
 const router = express.Router();
 
 // GET /contacts
 router.get('/', ctrlWrapper(fetchAllContacts));
 
-// POST /contacts (с поддержкой фото)
+// POST /contacts  (multipart/form-data з полем `photo`)
 router.post(
   '/',
-  uploadPhoto,               // принимает multipart/form-data
-  uploadToCloudinary,        // загружает фото в Cloudinary и кладет URL в req.photoUrl
-  validateBody(addContactSchema),
-  ctrlWrapper(createContactCtrl)
+  upload.single('photo'),                 // <-- спочатку парсимо файл/форму
+  validateBody(addContactSchema),         // <-- потім валідація body
+  ctrlWrapper(createContactCtrl),
 );
 
 // GET /contacts/:contactId
 router.get('/:contactId', isValidId, ctrlWrapper(getContactCtrl));
 
-// PATCH /contacts/:contactId (с поддержкой фото)
+// PATCH /contacts/:contactId  (можна оновлювати тільки фото або разом з іншими полями)
 router.patch(
   '/:contactId',
   isValidId,
-  uploadPhoto,
-  uploadToCloudinary,
+  upload.single('photo'),                 // <-- приймаємо нове фото
   validateBody(updateContactSchema),
-  ctrlWrapper(updateContactCtrl)
+  ctrlWrapper(updateContactCtrl),
 );
 
 // DELETE /contacts/:contactId

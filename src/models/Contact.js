@@ -12,6 +12,7 @@ const contactSchema = new mongoose.Schema(
       enum: ['work', 'home', 'personal'],
       default: 'personal'
     },
+    photo: { type: String, default: null }, // <-- нове поле для URL фото з Cloudinary
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
