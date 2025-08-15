@@ -20,14 +20,16 @@ const authenticate = async (req, res, next) => {
     return next(createHttpError(401, 'Not authorized'));
   }
 
-  // токен должен существовать в активной сессии пользователя
+  // Привязка токена к пользователю + проверка TTL
   const session = await Session.findOne({ userId: payload.userId, accessToken: token });
   if (!session || session.accessTokenValidUntil < new Date()) {
     return next(createHttpError(401, 'Not authorized'));
   }
 
   const user = await User.findById(payload.userId);
-  if (!user) return next(createHttpError(401, 'Not authorized'));
+  if (!user) {
+    return next(createHttpError(401, 'Not authorized'));
+  }
 
   req.user = user;
   next();

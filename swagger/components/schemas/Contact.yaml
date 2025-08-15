@@ -1,0 +1,28 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Contact ID
+  name:
+    type: string
+  email:
+    type: string
+    format: email
+  phone:
+    type: string
+  photo:
+    type: string
+    format: uri
+    description: Cloudinary URL
+  isFavourite:
+    type: boolean
+    default: false
+  contactType:
+    type: string
+    description: Arbitrary contact type filter
+  userId:
+    type: string
+    description: Owner (User) ID
+required:
+  - id
+  - name
