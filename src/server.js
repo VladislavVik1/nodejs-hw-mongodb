@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import pino from 'pino-http';
 import cookieParser from 'cookie-parser';
-
+import authResetRouter from "./authReset.js";
 import contactsRouter from './routes/contactsRouter.js';
 import authRouter from './routes/auth.js';
 import { handleError } from './middlewares/handleError.js';
@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 3000;
 const DB_URI = process.env.DB_URI || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/hw5';
 
 app.set('trust proxy', 1); // важно для secure cookies за прокси
-
+app.use("/auth", authResetRouter);
 app.use(pino());
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
