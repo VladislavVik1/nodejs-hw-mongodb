@@ -1,33 +1,42 @@
-import { getAllContacts, getContactById } from '../services/contacts.js';
+// src/controllers/contactsController.js
+import createHttpError from "http-errors";
+import { Contact } from "../models/contact.js";
+import { uploadBufferToCloudinary } from "../helpers/uploadToCloudinary.js";
 
-export const fetchAllContacts = async (req, res, next) => {
+// POST /contacts
+export const addContact = async (req, res, next) => {
   try {
-    const contacts = await getAllContacts({ filter: { userId: req.user._id } });
-    res.status(200).json({
-      status: 200,
-      message: 'Successfully found contacts!',
-      data: contacts,
-    });
-  } catch (error) {
-    next(error);
+    const data = { ...req.body };
+
+    // если пришёл файл
+    if (req.file?.buffer) {
+      const cloud = await uploadBufferToCloudinary(req.file.buffer, { folder: "contacts" });
+      data.photo = cloud.secure_url; // в модели уже есть поле photo: String
+    }
+
+    const created = await Contact.create(data);
+    return res.status(201).json(created);
+  } catch (err) {
+    return next(err);
   }
 };
 
-export const fetchContactById = async (req, res, next) => {
+// PATCH /contacts/:contactId
+export const updateContactById = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const contact = await getContactById(contactId, req.user._id);
+    const patch = { ...req.body };
 
-    if (!contact) {
-      return res.status(404).json({ message: 'Contact not found' });
+    if (req.file?.buffer) {
+      const cloud = await uploadBufferToCloudinary(req.file.buffer, { folder: "contacts" });
+      patch.photo = cloud.secure_url;
     }
 
-    res.status(200).json({
-      status: 200,
-      message: `Successfully found contact with id ${contactId}!`,
-      data: contact,
-    });
-  } catch (error) {
-    next(error);
+    const updated = await Contact.findByIdAndUpdate(contactId, patch, { new: true });
+    if (!updated) throw createHttpError(404, "Contact not found");
+
+    return res.json(updated);
+  } catch (err) {
+    return next(err);
   }
 };
