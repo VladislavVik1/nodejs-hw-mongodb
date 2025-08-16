@@ -5,8 +5,8 @@ import dotenv from 'dotenv';
 import pino from 'pino-http';
 import cookieParser from 'cookie-parser';
 
-import authResetRouter from './routes/authReset.js';      
-import contactsRouter from './routes/contactsRouter.js';  
+import authResetRouter from './routes/authReset.js';
+import contactsRouter from './routes/contacts.js';   // <-- фикс: имя файла роутера
 import authRouter from './routes/auth.js';
 
 import { handleError } from './middlewares/handleError.js';
@@ -19,7 +19,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_URI = process.env.DB_URI || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/hw5';
 
-app.set('trust proxy', 1); // важливо для secure cookies за проксі
+app.set('trust proxy', 1); // для secure cookies за проксі
 
 // middleware
 app.use(pino());

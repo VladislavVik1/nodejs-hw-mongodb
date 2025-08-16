@@ -1,36 +1,48 @@
 // src/middlewares/uploadPhoto.js
 import multer from "multer";
-import createHttpError from "http-errors";
-import { cloudinary } from "../libs/cloudinary.js";
+import { v2 as cloudinary } from "cloudinary";
 
-const upload = multer({
-  storage: multer.memoryStorage(),
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// 1) multer в память
+const storage = multer.memoryStorage();
+
+export const uploadPhoto = multer({
+  storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (req, file, cb) => {
     if (!file.mimetype?.startsWith("image/")) {
-      return cb(createHttpError(400, "Only image files are allowed"), false);
+      return cb(new Error("Only image files are allowed!"), false);
     }
     cb(null, true);
   },
-});
+}).single("photo");
 
-export const uploadPhoto = upload.single("photo");
+// 2) если файл есть — грузим буфер в Cloudinary и кладём URL в req.body
+export const uploadToCloudinary = async (req, res, next) => {
+  try {
+    if (!req.file?.buffer) return next();
 
-export const uploadToCloudinary = (req, res, next) => {
-  if (!req.file?.buffer) return next();
+    const uploadFromBuffer = (buffer) =>
+      new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "contacts", resource_type: "image" },
+          (err, result) => (err ? reject(err) : resolve(result))
+        );
+        stream.end(buffer);
+      });
 
-  const folder = process.env.CLOUDINARY_FOLDER || "contacts";
+    const result = await uploadFromBuffer(req.file.buffer);
 
-  const stream = cloudinary.uploader.upload_stream(
-    { folder, resource_type: "image" },
-    (err, result) => {
-      if (err) return next(createHttpError(400, "Failed to upload image"));
-      // положим в body, чтобы прошло валидацию и сохранилось моделью
-      req.body.photo = result.secure_url;
-      req.body.photoPublicId = result.public_id; // опционально
-      next();
-    }
-  );
+    req.body.photo = result.secure_url;
+    req.body.photoPublicId = result.public_id;
 
-  stream.end(req.file.buffer);
+    next();
+  } catch (err) {
+    next(err);
+  }
 };
