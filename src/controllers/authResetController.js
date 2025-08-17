@@ -4,16 +4,18 @@ import jwt from "jsonwebtoken";
 import createHttpError from "http-errors";
 import User from "../models/user.js";
 import Session from "../models/session.js";
-import emailService from "../services/emailService.js";
+import { sendMail } from "../services/emailService.js"; // ✅ именованный импорт
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 const APP_DOMAIN = process.env.APP_DOMAIN || "http://localhost:3000";
 
-// утиліта, щоб не «висіло», якщо SMTP завис
+// Щоб не «висіло», якщо SMTP завис
 const withTimeout = (promise, ms = 15000) =>
   Promise.race([
     promise,
-    new Promise((_, reject) => setTimeout(() => reject(createHttpError(504, "Email service timeout")), ms)),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(createHttpError(504, "Email service timeout")), ms)
+    ),
   ]);
 
 export const sendResetEmail = async (req, res, next) => {
@@ -25,11 +27,16 @@ export const sendResetEmail = async (req, res, next) => {
 
     // Не розкриваємо, чи існує користувач. Відповідь однакова.
     if (user) {
-      const token = jwt.sign({ sub: user._id.toString(), email }, JWT_SECRET, { expiresIn: "5m" });
+      const token = jwt.sign(
+        { sub: user._id.toString(), email },
+        JWT_SECRET,
+        { expiresIn: "5m" }
+      );
+
       const resetLink = `${APP_DOMAIN}/reset-password?token=${token}`;
 
       await withTimeout(
-        emailService.sendMail({
+        sendMail({
           to: email,
           subject: "Password reset",
           html: `
@@ -63,7 +70,10 @@ export const resetPassword = async (req, res, next) => {
       throw createHttpError(401, "Token is expired or invalid.");
     }
 
-    const user = await User.findById(decoded.sub) || (await User.findOne({ email: decoded.email }));
+    const user =
+      (await User.findById(decoded.sub)) ||
+      (await User.findOne({ email: decoded.email }));
+
     if (!user) throw createHttpError(404, "User not found!");
 
     const hash = await bcrypt.hash(password, 10);
