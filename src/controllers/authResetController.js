@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import createHttpError from "http-errors";
 import User from "../models/user.js";
 import Session from "../models/session.js";
-import { sendMail } from "../services/emailService.js"; // ✅ именованный импорт
+import { sendMail } from "../services/emailService.js"; 
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 const APP_DOMAIN = process.env.APP_DOMAIN || "http://localhost:3000";

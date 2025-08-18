@@ -15,20 +15,14 @@ const transporter = nodemailer.createTransport({
   pool: true,
 });
 
-const from = process.env.SMTP_FROM || process.env.SMTP_USER;
+export async function sendMail({ to, subject, html, text, from }) {
+  const sender = from || process.env.SMTP_FROM || process.env.SMTP_USER;
+  if (!sender) throw new Error("SMTP_FROM or SMTP_USER must be set");
+  if (!to) throw new Error('"to" is required');
 
-export async function sendMail({ to, subject, html, text }) {
-  try {
-    if (!from) {
-      throw new Error("SMTP_FROM or SMTP_USER must be set");
-    }
-    const info = await transporter.sendMail({ from, to, subject, html, text });
-    console.log("Email sent:", info.messageId);
-    return true;
-  } catch (err) {
-    console.error("Email send error:", err?.message || err);
-    throw err;
-  }
+  const info = await transporter.sendMail({ from: sender, to, subject, html, text });
+  console.log("Email sent:", info.messageId);
+  return info;
 }
 
 export default { sendMail };

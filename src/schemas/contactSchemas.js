@@ -7,8 +7,8 @@ export const addContactSchema = Joi.object({
   phoneNumber: Joi.string().min(7).max(20).required(),
   isFavourite: Joi.boolean().optional(),
   contactType: Joi.string().valid("personal", "work", "home").optional(),
-  photo: Joi.string().uri().optional(),       // ✅ разрешаем URL фото
-  photoPublicId: Joi.string().optional(),     // ✅ ID из Cloudinary (если сохраняем)
+  photo: Joi.string().uri().optional(), // только URL фото
+  // photoPublicId — удалено
 });
 
 export const updateContactSchema = Joi.object({
@@ -17,6 +17,5 @@ export const updateContactSchema = Joi.object({
   phoneNumber: Joi.string().min(7).max(20),
   isFavourite: Joi.boolean(),
   contactType: Joi.string().valid("personal", "work", "home"),
-  photo: Joi.string().uri(),                  // ✅ можно менять фото
-  photoPublicId: Joi.string(),
+  photo: Joi.string().uri(),
 }).min(1);
