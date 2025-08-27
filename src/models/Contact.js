@@ -14,9 +14,8 @@ const contactSchema = new mongoose.Schema(
     },
     isFavourite: { type: Boolean, default: false },
 
-    // Фото из Cloudinary
-    photo: { type: String, default: null },          // secure_url
-    photoPublicId: { type: String, default: null },  // public_id (опционально)
+    // Фото з Cloudinary (зберігаємо лише URL)
+    photo: { type: String, default: null },
 
     contactType: {
       type: String,
@@ -34,7 +33,7 @@ const contactSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Часто удобно быстро искать по имени внутри пользователя
+// індекс для швидкого пошуку контактів користувача за ім'ям
 contactSchema.index({ userId: 1, name: 1 });
 
 export const Contact = mongoose.model('Contact', contactSchema);

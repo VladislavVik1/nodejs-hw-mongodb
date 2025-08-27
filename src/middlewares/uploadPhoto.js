@@ -8,7 +8,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// 1) multer — храним в памяти
+// Multer — тримаємо файл у пам'яті
 const storage = multer.memoryStorage();
 
 const ALLOWED_MIME = new Set([
@@ -20,25 +20,26 @@ const ALLOWED_MIME = new Set([
   "image/heif",
 ]);
 
+const fileFilter = (req, file, cb) => {
+  const type = file?.mimetype || "";
+  if (!type.startsWith("image/") || (ALLOWED_MIME.size && !ALLOWED_MIME.has(type))) {
+    return cb(new Error("Only image files (jpeg, png, webp, gif, heic/heif) are allowed"), false);
+  }
+  cb(null, true);
+};
+
 export const uploadPhoto = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (req, file, cb) => {
-    const type = file?.mimetype || "";
-    if (!type.startsWith("image/") || (ALLOWED_MIME.size && !ALLOWED_MIME.has(type))) {
-      return cb(new Error("Only image files (jpeg, png, webp, gif, heic) are allowed"), false);
-    }
-    cb(null, true);
-  },
+  fileFilter,
 }).single("photo");
 
-// 2) Если файл есть — грузим буфер в Cloudinary и кладём URL/public_id в req.body
-export const uploadToCloudinary = async (req, res, next) => {
+// Якщо файл є — вантажимо буфер у Cloudinary і кладемо URL у req.body.photo
+export const uploadToCloudinary = async (req, _res, next) => {
   try {
-    // Без файла — пропускаем дальше (POST/PACTH без фото должны работать)
+    // Без файлу — пропускаємо далі (POST/PATCH без фото мають працювати)
     if (!req.file?.buffer) return next();
 
-    // на всякий случай гарантируем объект
     if (!req.body) req.body = {};
 
     const uploadFromBuffer = (buffer) =>
@@ -47,7 +48,7 @@ export const uploadToCloudinary = async (req, res, next) => {
           {
             folder: "contacts",
             resource_type: "image",
-            // можно включить автоформатирование и сжатие, если хотите:
+            // за потреби ввімкніть автоматичне стиснення:
             // transformation: [{ fetch_format: "auto", quality: "auto" }],
           },
           (err, result) => (err ? reject(err) : resolve(result))
@@ -57,8 +58,8 @@ export const uploadToCloudinary = async (req, res, next) => {
 
     const result = await uploadFromBuffer(req.file.buffer);
 
+    // Відповідно до критеріїв: зберігаємо лише URL
     req.body.photo = result.secure_url;
-    req.body.photoPublicId = result.public_id;
 
     next();
   } catch (err) {
