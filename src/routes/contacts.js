@@ -12,50 +12,50 @@ import { addContactSchema, updateContactSchema } from '../schemas/contactSchemas
 import validateBody from '../middlewares/validateBody.js';
 import isValidId from '../middlewares/isValidId.js';
 import { uploadPhoto, uploadToCloudinary } from '../middlewares/uploadPhoto.js';
-// import { auth } from '../middlewares/auth.js'; // ← если нужно защищать маршруты
+// import authenticate from '../middlewares/authenticate.js'; // ← розкоментуй, якщо маршрути мають бути захищені
 
 const router = express.Router();
 
 // GET /contacts — список
 router.get(
   '/',
-  // auth,
+  // authenticate,
   ctrlWrapper(fetchAllContacts)
 );
 
-// POST /contacts — создать (с фото)
+// POST /contacts — створити (з фото)
 router.post(
   '/',
-  // auth,
-  uploadPhoto,
-  uploadToCloudinary,
-  validateBody(addContactSchema),
-  ctrlWrapper(createContactCtrl)
+  // authenticate,
+  uploadPhoto,             // 1) приймаємо файл у полі "photo" (multer memory)
+  uploadToCloudinary,      // 2) заливаємо у Cloudinary, кладемо URL у req.body.photo
+  validateBody(addContactSchema), // 3) валідація тіла (photo — це URL)
+  ctrlWrapper(createContactCtrl)  // 4) контролер створення
 );
 
 // GET /contacts/:contactId — один контакт
 router.get(
   '/:contactId',
-  // auth,
+  // authenticate,
   isValidId,
   ctrlWrapper(getContactCtrl)
 );
 
-// PATCH /contacts/:contactId — обновить (с фото)
+// PATCH /contacts/:contactId — оновити (можна нове фото)
 router.patch(
   '/:contactId',
-  // auth,
+  // authenticate,
   isValidId,
-  uploadPhoto,
-  uploadToCloudinary,
+  uploadPhoto,                // (опційно) нове фото
+  uploadToCloudinary,         // якщо є файл — отримаємо req.body.photo = URL
   validateBody(updateContactSchema),
   ctrlWrapper(updateContactCtrl)
 );
 
-// DELETE /contacts/:contactId — удалить
+// DELETE /contacts/:contactId — видалити
 router.delete(
   '/:contactId',
-  // auth,
+  // authenticate,
   isValidId,
   ctrlWrapper(deleteContactCtrl)
 );

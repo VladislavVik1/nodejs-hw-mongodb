@@ -4,12 +4,13 @@ import jwt from "jsonwebtoken";
 import createHttpError from "http-errors";
 import User from "../models/user.js";
 import Session from "../models/session.js";
-import { sendMail } from "../services/emailService.js"; 
+import { sendMail } from "../services/emailService.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
-const APP_DOMAIN = process.env.APP_DOMAIN || "http://localhost:3000";
+// прибираємо можливий трейлінг-слеш, щоб лінк не подвоював слеші
+const APP_DOMAIN = (process.env.APP_DOMAIN || "http://localhost:3000").replace(/\/$/, "");
 
-// Щоб не «висіло», якщо SMTP завис
+// Щоб не «висіло», якщо SMTP зависає
 const withTimeout = (promise, ms = 15000) =>
   Promise.race([
     promise,
@@ -18,6 +19,7 @@ const withTimeout = (promise, ms = 15000) =>
     ),
   ]);
 
+// POST /auth/send-reset-email
 export const sendResetEmail = async (req, res, next) => {
   try {
     const { email } = req.body || {};
@@ -25,7 +27,7 @@ export const sendResetEmail = async (req, res, next) => {
 
     const user = await User.findOne({ email });
 
-    // Не розкриваємо, чи існує користувач. Відповідь однакова.
+    // Не розкриваємо, чи існує користувач — відповідь однакова
     if (user) {
       const token = jwt.sign(
         { sub: user._id.toString(), email },
@@ -33,7 +35,7 @@ export const sendResetEmail = async (req, res, next) => {
         { expiresIn: "5m" }
       );
 
-      const resetLink = `${APP_DOMAIN}/reset-password?token=${token}`;
+      const resetLink = `${APP_DOMAIN}/reset-password?token=${encodeURIComponent(token)}`;
 
       await withTimeout(
         sendMail({
@@ -43,9 +45,13 @@ export const sendResetEmail = async (req, res, next) => {
             <p>Щоб скинути пароль, перейдіть за посиланням (дійсне 5 хвилин):</p>
             <p><a href="${resetLink}">${resetLink}</a></p>
           `,
-          text: `Reset your password: ${resetLink}`,
+          text: `Reset your password (valid 5 minutes): ${resetLink}`,
         })
-      );
+      ).catch((err) => {
+        // Якщо SMTP зламався — все одно не палимо існування юзера,
+        // але лог дамо у консоль для дебагу
+        console.error("send-reset-email error:", err?.message || err);
+      });
     }
 
     return res.status(200).json({
@@ -58,6 +64,7 @@ export const sendResetEmail = async (req, res, next) => {
   }
 };
 
+// POST /auth/reset-pwd
 export const resetPassword = async (req, res, next) => {
   try {
     const { token, password } = req.body || {};
@@ -79,7 +86,7 @@ export const resetPassword = async (req, res, next) => {
     const hash = await bcrypt.hash(password, 10);
     await User.findByIdAndUpdate(user._id, { password: hash });
 
-    // анулюємо всі сесії
+    // Анулюємо всі сесії
     await Session.deleteMany({ userId: user._id });
 
     return res.status(200).json({
