@@ -1,0 +1,66 @@
+schemas:
+  Contact:
+    type: object
+    properties:
+      _id:
+        type: string
+        example: 66cfc8f2b7d1a4e0b2a9f9c1
+      name:
+        type: string
+        example: John Doe
+      email:
+        type: string
+        format: email
+        example: john@example.com
+      phone:
+        type: string
+        example: +380991112233
+      favorite:
+        type: boolean
+        default: false
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+    required: [_id, name, email, phone, favorite, createdAt, updatedAt]
+
+  ContactCreate:
+    type: object
+    properties:
+      name: { type: string }
+      email: { type: string, format: email }
+      phone: { type: string }
+      favorite: { type: boolean }
+    required: [name, email, phone]
+
+  ContactUpdate:
+    type: object
+    properties:
+      name: { type: string }
+      email: { type: string, format: email }
+      phone: { type: string }
+      favorite: { type: boolean }
+    additionalProperties: false
+    minProperties: 1
+
+  PaginatedContacts:
+    type: object
+    properties:
+      page: { type: integer, example: 1 }
+      limit: { type: integer, example: 20 }
+      total: { type: integer, example: 57 }
+      data:
+        type: array
+        items:
+          $ref: '#/components/schemas/Contact'
+
+  Error:
+    type: object
+    properties:
+      message:
+        type: string
+      status:
+        type: integer
+    required: [message]

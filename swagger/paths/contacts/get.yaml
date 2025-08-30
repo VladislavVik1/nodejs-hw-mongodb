@@ -1,39 +1,20 @@
-tags:
-  - Contacts
-summary: Отримати всі контакти
-operationId: getContacts
-description: Повертає список контактів з пагінацією і фільтрами.
+tags: [Contacts]
+summary: Отримати список контактів
+operationId: listContacts
+description: Повертає пагінований список контактів з фільтрацією та сортуванням.
 security:
   - bearerAuth: []
 parameters:
-  - in: query
-    name: page
-    schema: { type: integer, minimum: 1, default: 1 }
-  - in: query
-    name: perPage
-    schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
-  - in: query
-    name: sortBy
-    schema: { type: string, default: name }
-  - in: query
-    name: sortOrder
-    schema:
-      type: string
-      enum: [asc, desc]
-      default: asc
-  - in: query
-    name: type
-    schema: { type: string }
-    description: contactType filter
-  - in: query
-    name: isFavourite
-    schema: { type: boolean }
+  - $ref: '#/components/parameters/Page'
+  - $ref: '#/components/parameters/Limit'
+  - $ref: '#/components/parameters/Favorite'
+  - $ref: '#/components/parameters/Sort'
 responses:
   '200':
-    description: Успіх
+    description: ОК
     content:
       application/json:
         schema:
-          $ref: ../../components/schemas/ContactsPage.yaml
+          $ref: '#/components/schemas/PaginatedContacts'
   '401':
-    description: Unauthorized
+    $ref: '#/components/responses/Unauthorized'
