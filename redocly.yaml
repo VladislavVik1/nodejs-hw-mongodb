@@ -1,20 +1,7 @@
-extends:
-  - recommended
-
-rules:
-  no-unused-components: error
-
 apis:
   sample@v1:
     root: docs/openapi.yaml
-    openapi:
-      theme:
-        htmlTemplate: ./docs/index.html
-        colors:
-          primary:
-            main: '#32329f'
-        generateCodeSamples:
-          languages:
-            - lang: curl
-            - lang: Node.js
-            - lang: JavaScript
+extends:
+  - recommended
+rules:
+  no-unused-components: error

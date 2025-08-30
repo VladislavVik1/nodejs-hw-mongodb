@@ -1,0 +1,40 @@
+tags:
+  - Auth
+summary: Регистрация пользователя
+operationId: registerUser
+description: Создает нового пользователя
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          email:
+            type: string
+            format: email
+          password:
+            type: string
+            minLength: 6
+        required:
+          - email
+          - password
+responses:
+  '201':
+    description: Пользователь создан
+    content:
+      application/json:
+        schema:
+          $ref: '../../../components/schemas/AuthResponse.yaml'
+  '400':
+    $ref: '../../../components/responses/ValidationError.yaml'
+  '409':
+    description: Email уже используется
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Email in use

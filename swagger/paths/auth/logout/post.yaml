@@ -1,0 +1,12 @@
+tags:
+  - Auth
+summary: Выход пользователя
+operationId: logoutUser
+description: Завершает сеанс пользователя
+security:
+  - bearerAuth: []
+responses:
+  '204':
+    description: Успешный выход
+  '401':
+    $ref: '../../../components/responses/UnauthorizedError.yaml'

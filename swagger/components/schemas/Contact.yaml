@@ -1,0 +1,30 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Уникальный идентификатор контакта
+  name:
+    type: string
+    description: Имя контакта
+  email:
+    type: string
+    format: email
+    description: Email адрес
+  phone:
+    type: string
+    description: Номер телефона
+  favorite:
+    type: boolean
+    description: Флаг избранного контакта
+    default: false
+  owner:
+    $ref: './User.yaml'
+required:
+  - name
+  - email
+  - phone
+example:
+  name: John Doe
+  email: john.doe@example.com
+  phone: "(123) 456-7890"
+  favorite: true
