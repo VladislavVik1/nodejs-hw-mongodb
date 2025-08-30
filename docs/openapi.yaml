@@ -1,51 +1,57 @@
 openapi: 3.1.0
 info:
   version: 1.0.0
-  title: Contacts API (hw7-swagger)
+  title: Contacts API
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  description: >
-    Простий API контактів з авторизацією (Bearer). Документація зібрана ReDocly,
-    інтерактив — через swagger-ui-express на /api-docs.
-
+  description: API для управления контактами с аутентификацией
 tags:
   - name: Contacts
-    description: CRUD для контактів
+    description: Операции с контактами
   - name: Auth
-    description: (опціонально) Авторизація
-
+    description: Аутентификация пользователей
 servers:
-  - url: http://localhost:3000/api
-    description: Local
-  - url: https://your-render-app.onrender.com/api
-    description: Render
-
+  - url: http://localhost:3000
+    description: Локальный сервер
+  - url: https://nodejs-hw-mongodb-pfm6.onrender.com
+    description: Продакшен сервер
 paths:
   /contacts:
     get:
-      $ref: ../swagger/paths/contacts/get.yaml
+      $ref: './swagger/paths/contacts/get.yaml'
     post:
-      $ref: ../swagger/paths/contacts/post.yaml
-
+      $ref: './swagger/paths/contacts/post.yaml'
   /contacts/{contactId}:
     get:
-      $ref: ../swagger/paths/contacts/{contactId}/get.yaml
+      $ref: './swagger/paths/contacts/{contactId}/get.yaml'
     patch:
-      $ref: ../swagger/paths/contacts/{contactId}/patch.yaml
+      $ref: './swagger/paths/contacts/{contactId}/patch.yaml'
     delete:
-      $ref: ../swagger/paths/contacts/{contactId}/delete.yaml
-
+      $ref: './swagger/paths/contacts/{contactId}/delete.yaml'
+  /auth/register:
+    post:
+      $ref: './swagger/paths/auth/register/post.yaml'
+  /auth/login:
+    post:
+      $ref: './swagger/paths/auth/login/post.yaml'
+  /auth/current:
+    get:
+      $ref: './swagger/paths/auth/current/get.yaml'
+  /auth/logout:
+    post:
+      $ref: './swagger/paths/auth/logout/post.yaml'
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-
-  # підтягуємо окремі файли компонентів
+      bearerFormat: JWT
   schemas:
-    $ref: ../swagger/components/schemas.yaml#/schemas
+    $ref: './swagger/components/schemas.yaml'
   parameters:
-    $ref: ../swagger/components/parameters.yaml#/parameters
+    $ref: './swagger/components/parameters.yaml'
   responses:
-    $ref: ../swagger/components/responses.yaml#/responses
+    $ref: './swagger/components/responses.yaml'
+security:
+  - bearerAuth: []

@@ -1,21 +1,39 @@
-responses:
-  Unauthorized:
-    description: Неавторизовано
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
+Unauthorized:
+  description: Неавторизовано
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'
+      example:
+        message: "Not authorized"
+        code: 401
 
-  NotFound:
-    description: Не знайдено
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
+NotFound:
+  description: Не знайдено
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'
+      example:
+        message: "Not found"
+        code: 404
 
-  ValidationError:
-    description: Некоректні дані
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/Error'
+ValidationError:
+  description: Некоректні дані
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'
+      example:
+        message: "Validation error"
+        code: 400
+
+ServerError:
+  description: Помилка сервера
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'
+      example:
+        message: "Server error"
+        code: 500

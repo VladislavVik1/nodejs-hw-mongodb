@@ -1,7 +1,8 @@
-tags: [Contacts]
-summary: Отримати список контактів
-operationId: listContacts
-description: Повертає пагінований список контактів з фільтрацією та сортуванням.
+tags:
+  - Contacts
+summary: Получить список контактов
+operationId: getContacts
+description: Возвращает список контактов с пагинацией и фильтрацией
 security:
   - bearerAuth: []
 parameters:
@@ -11,10 +12,14 @@ parameters:
   - $ref: '#/components/parameters/Sort'
 responses:
   '200':
-    description: ОК
+    description: Успешный запрос
     content:
       application/json:
         schema:
           $ref: '#/components/schemas/PaginatedContacts'
+  '400':
+    $ref: '#/components/responses/ValidationError'
   '401':
     $ref: '#/components/responses/Unauthorized'
+  '500':
+    $ref: '#/components/responses/ServerError'

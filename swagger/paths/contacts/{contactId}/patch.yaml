@@ -1,7 +1,8 @@
-tags: [Contacts]
-summary: Оновити контакт частково
+tags:
+  - Contacts
+summary: Обновить контакт
 operationId: updateContact
-description: Часткове оновлення полів контакту.
+description: Обновляет контакт по указанному ID и возвращает обновленный контакт
 security:
   - bearerAuth: []
 parameters:
@@ -12,9 +13,12 @@ requestBody:
     application/json:
       schema:
         $ref: '#/components/schemas/ContactUpdate'
+      example:
+        name: John Doe Updated
+        email: john.doe.updated@example.com
 responses:
   '200':
-    description: ОК
+    description: Контакт обновлен
     content:
       application/json:
         schema:
@@ -25,3 +29,5 @@ responses:
     $ref: '#/components/responses/Unauthorized'
   '404':
     $ref: '#/components/responses/NotFound'
+  '500':
+    $ref: '#/components/responses/ServerError'

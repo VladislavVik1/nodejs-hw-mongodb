@@ -1,4 +1,3 @@
-// src/server.js
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
@@ -29,6 +28,10 @@ const DB_URI =
   process.env.MONGODB_URI ||
   'mongodb://127.0.0.1:27017/hw7';
 
+// Получаем __dirname для ES модулей
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // якщо є проксі (Render/Heroku/Nginx) — потрібне для secure cookies
 app.set('trust proxy', 1);
 
@@ -43,8 +46,6 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/healthz', (_req, res) => res.json({ ok: true }));
 
 // 👉 Swagger UI на /api-docs
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const swaggerPath = path.join(__dirname, '../docs/swagger.json');
 
 let swaggerDocument = {};
@@ -54,7 +55,14 @@ try {
   console.warn('⚠️  docs/swagger.json не найден. Выполни: npm run build-docs');
 }
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, { explorer: true }));
+// Настройка Swagger UI
+const swaggerOptions = {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Contacts API Documentation',
+};
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
 
 // маршрути
 app.use('/auth', authRouter);        // register/login/refresh/logout
@@ -72,6 +80,7 @@ mongoose
     console.log('✅ Database connected');
     app.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT}`);
+      console.log(`📚 API Documentation available at http://localhost:${PORT}/api-docs`);
     });
   })
   .catch((error) => {

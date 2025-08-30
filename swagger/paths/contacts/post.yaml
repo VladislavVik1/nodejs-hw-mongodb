@@ -1,7 +1,8 @@
-tags: [Contacts]
-summary: Створити контакт
+tags:
+  - Contacts
+summary: Создать новый контакт
 operationId: createContact
-description: Додає новий контакт.
+description: Создает новый контакт и возвращает его
 security:
   - bearerAuth: []
 requestBody:
@@ -10,9 +11,14 @@ requestBody:
     application/json:
       schema:
         $ref: '#/components/schemas/ContactCreate'
+      example:
+        name: John Doe
+        email: john.doe@example.com
+        phone: "+380501234567"
+        favorite: false
 responses:
   '201':
-    description: Створено
+    description: Контакт создан
     content:
       application/json:
         schema:
@@ -21,3 +27,5 @@ responses:
     $ref: '#/components/responses/ValidationError'
   '401':
     $ref: '#/components/responses/Unauthorized'
+  '500':
+    $ref: '#/components/responses/ServerError'
