@@ -1,11 +1,11 @@
 openapi: 3.1.0
 info:
   version: 1.0.0
-  title: Contacts API
+  title: Contact Management API
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  description: API для управления контактами с аутентификацией
+  description: API для управления контактами с аутентификацией пользователей
 tags:
   - name: Contacts
     description: Операции с контактами
@@ -13,45 +13,48 @@ tags:
     description: Аутентификация пользователей
 servers:
   - url: http://localhost:3000
-    description: Локальный сервер
   - url: https://nodejs-hw-mongodb-pfm6.onrender.com
-    description: Продакшен сервер
 paths:
+  /contacts/{id}:
+    get:
+      $ref: '../swagger/paths/contacts/{id}/get.yaml'
+    patch:
+      $ref: '../swagger/paths/contacts/{id}/patch.yaml'
+    delete:
+      $ref: '../swagger/paths/contacts/{id}/delete.yaml'
   /contacts:
     get:
-      $ref: './swagger/paths/contacts/get.yaml'
+      $ref: '../swagger/paths/contacts/get.yaml'
     post:
-      $ref: './swagger/paths/contacts/post.yaml'
-  /contacts/{contactId}:
-    get:
-      $ref: './swagger/paths/contacts/{contactId}/get.yaml'
-    patch:
-      $ref: './swagger/paths/contacts/{contactId}/patch.yaml'
-    delete:
-      $ref: './swagger/paths/contacts/{contactId}/delete.yaml'
+      $ref: '../swagger/paths/contacts/post.yaml'
   /auth/register:
     post:
-      $ref: './swagger/paths/auth/register/post.yaml'
+      $ref: '../swagger/paths/auth/register/post.yaml'
   /auth/login:
     post:
-      $ref: './swagger/paths/auth/login/post.yaml'
-  /auth/current:
-    get:
-      $ref: './swagger/paths/auth/current/get.yaml'
+      $ref: '../swagger/paths/auth/login/post.yaml'
   /auth/logout:
     post:
-      $ref: './swagger/paths/auth/logout/post.yaml'
+      $ref: '../swagger/paths/auth/logout/post.yaml'
+  /auth/current:
+    get:
+      $ref: '../swagger/paths/auth/current/get.yaml'
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
   schemas:
-    $ref: './swagger/components/schemas.yaml'
-  parameters:
-    $ref: './swagger/components/parameters.yaml'
+    Contact:
+      $ref: '../swagger/components/schemas/Contact.yaml'
+    User:
+      $ref: '../swagger/components/schemas/User.yaml'
+    AuthResponse:
+      $ref: '../swagger/components/schemas/AuthResponse.yaml'
   responses:
-    $ref: './swagger/components/responses.yaml'
-security:
-  - bearerAuth: []
+    UnauthorizedError:
+      $ref: '../swagger/components/responses/UnauthorizedError.yaml'
+    NotFoundError:
+      $ref: '../swagger/components/responses/NotFoundError.yaml'
+    ValidationError:
+      $ref: '../swagger/components/responses/ValidationError.yaml'

@@ -1,0 +1,29 @@
+tags:
+  - Contacts
+summary: Удалить контакт
+operationId: deleteContact
+description: Удаляет контакт по ID
+security:
+  - bearerAuth: []
+parameters:
+  - in: path
+    name: id
+    required: true
+    schema:
+      type: string
+    description: ID контакта
+responses:
+  '200':
+    description: Контакт удален
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Contact deleted
+  '404':
+    $ref: '../../../components/responses/NotFoundError.yaml'
+  '401':
+    $ref: '../../../components/responses/UnauthorizedError.yaml'

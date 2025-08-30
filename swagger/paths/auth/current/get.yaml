@@ -1,0 +1,16 @@
+tags:
+  - Auth
+summary: Получить текущего пользователя
+operationId: getCurrentUser
+description: Возвращает информацию о текущем аутентифицированном пользователе
+security:
+  - bearerAuth: []
+responses:
+  '200':
+    description: Успешный запрос
+    content:
+      application/json:
+        schema:
+          $ref: '../../../components/schemas/User.yaml'
+  '401':
+    $ref: '../../../components/responses/UnauthorizedError.yaml'
