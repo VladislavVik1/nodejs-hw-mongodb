@@ -5,32 +5,39 @@
     "type": "module",
     "main": "src/server.js",
     "scripts": {
-        "start": "node src/server.js",
-        "dev": "nodemon src/server.js",
-        "lint": "eslint ."
-    },
+    "start": "node src/server.js",
+    "prestart": "npm run build-docs",
+    "dev": "nodemon src/server.js",
+    "lint": "eslint .",
+    "build": "npm run build-docs",
+    "build-docs": "redocly bundle docs/openapi.yaml --ext json -o docs/swagger.json",
+    "preview-docs": "redocly preview --product redoc"
+  },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "bcrypt": "^6.0.0",
-        "bcryptjs": "^3.0.2",
-        "cloudinary": "^2.7.0",
-        "cookie-parser": "^1.4.7",
-        "cors": "^2.8.5",
-        "dotenv": "^16.6.1",
-        "express": "^4.21.2",
-        "http-errors": "^2.0.0",
-        "joi": "^17.13.3",
-        "jsonwebtoken": "^9.0.2",
-        "mongodb": "^6.17.0",
-        "mongoose": "^8.17.0",
-        "multer": "^2.0.2",
-        "nodemailer": "^7.0.5",
-        "pino-http": "^9.0.0"
+      "bcrypt": "^6.0.0",
+      "bcryptjs": "^3.0.2",
+      "cloudinary": "^2.7.0",
+      "cookie-parser": "^1.4.7",
+      "cors": "^2.8.5",
+      "dotenv": "^16.6.1",
+      "express": "^4.21.2",
+      "http-errors": "^2.0.0",
+      "joi": "^17.13.3",
+      "jsonwebtoken": "^9.0.2",
+      "mongodb": "^6.17.0",
+      "mongoose": "^8.17.0",
+      "multer": "^2.0.2",
+      "nodemailer": "^7.0.5",
+      "pino-http": "^9.0.0",
+      "swagger-ui-express": "^5.0.1"
     },
     "devDependencies": {
-        "eslint": "^8.56.0",
-        "nodemon": "^3.1.10"
+      "@redocly/cli": "^2.0.8",
+      "eslint": "^8.56.0",
+      "nodemon": "^3.1.10"
     }
-}
+  }
+  

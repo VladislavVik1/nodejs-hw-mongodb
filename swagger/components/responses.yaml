@@ -1,0 +1,21 @@
+responses:
+  Unauthorized:
+    description: Неавторизовано
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Error'
+
+  NotFound:
+    description: Не знайдено
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Error'
+
+  ValidationError:
+    description: Некоректні дані
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Error'

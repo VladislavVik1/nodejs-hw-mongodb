@@ -1,24 +1,33 @@
 openapi: 3.1.0
 info:
   version: 1.0.0
-  title: Contacts API
+  title: Contacts API (hw7-swagger)
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   description: >
-    REST API для управления контактами.
+    Простий API контактів з авторизацією (Bearer). Документація зібрана ReDocly,
+    інтерактив — через swagger-ui-express на /api-docs.
+
 tags:
   - name: Contacts
-    description: Операции с контактами
+    description: CRUD для контактів
+  - name: Auth
+    description: (опціонально) Авторизація
+
 servers:
-  - url: http://localhost:3000
-  - url: https://your-render-url.onrender.com
+  - url: http://localhost:3000/api
+    description: Local
+  - url: https://your-render-app.onrender.com/api
+    description: Render
+
 paths:
   /contacts:
     get:
       $ref: ../swagger/paths/contacts/get.yaml
     post:
       $ref: ../swagger/paths/contacts/post.yaml
+
   /contacts/{contactId}:
     get:
       $ref: ../swagger/paths/contacts/{contactId}/get.yaml
@@ -26,3 +35,17 @@ paths:
       $ref: ../swagger/paths/contacts/{contactId}/patch.yaml
     delete:
       $ref: ../swagger/paths/contacts/{contactId}/delete.yaml
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  # підтягуємо окремі файли компонентів
+  schemas:
+    $ref: ../swagger/components/schemas.yaml#/schemas
+  parameters:
+    $ref: ../swagger/components/parameters.yaml#/parameters
+  responses:
+    $ref: ../swagger/components/responses.yaml#/responses

@@ -1,8 +1,7 @@
-tags:
-  - Contacts
-summary: Створити новий контакт
+tags: [Contacts]
+summary: Створити контакт
 operationId: createContact
-description: Створює контакт. Підтримує JSON або multipart/form-data (з полем photo).
+description: Додає новий контакт.
 security:
   - bearerAuth: []
 requestBody:
@@ -10,34 +9,15 @@ requestBody:
   content:
     application/json:
       schema:
-        $ref: ../../components/schemas/ContactInput.yaml
-    multipart/form-data:
-      schema:
-        type: object
-        properties:
-          name:
-            type: string
-          email:
-            type: string
-            format: email
-          phone:
-            type: string
-          isFavourite:
-            type: boolean
-          contactType:
-            type: string
-          photo:
-            type: string
-            format: binary
-        required: [name]
+        $ref: '#/components/schemas/ContactCreate'
 responses:
   '201':
     description: Створено
     content:
       application/json:
         schema:
-          $ref: ../../components/schemas/Contact.yaml
+          $ref: '#/components/schemas/Contact'
   '400':
-    description: Помилка валідації
+    $ref: '#/components/responses/ValidationError'
   '401':
-    description: Unauthorized
+    $ref: '#/components/responses/Unauthorized'
