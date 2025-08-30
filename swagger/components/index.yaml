@@ -1,0 +1,112 @@
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+
+parameters:
+  ContactId:
+    name: contactId
+    in: path
+    required: true
+    description: Mongo ObjectId контакту
+    schema:
+      type: string
+      example: 66cfc8f2b7d1a4e0b2a9f9c1
+
+  Page:
+    name: page
+    in: query
+    description: Номер сторінки (1..N)
+    schema: { type: integer, minimum: 1, default: 1 }
+
+  Limit:
+    name: limit
+    in: query
+    description: Кількість на сторінку
+    schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+  Favorite:
+    name: favorite
+    in: query
+    description: Фільтр улюблених
+    schema: { type: boolean }
+
+  Sort:
+    name: sort
+    in: query
+    description: Поле сортування (з '-' для DESC)
+    schema:
+      type: string
+      enum: [name, -name, createdAt, -createdAt]
+
+schemas:
+  Contact:
+    type: object
+    properties:
+      _id: { type: string, example: 66cfc8f2b7d1a4e0b2a9f9c1 }
+      name: { type: string, example: John Doe }
+      email: { type: string, format: email, example: john@example.com }
+      phone: { type: string, example: +380991112233 }
+      favorite: { type: boolean, default: false }
+      createdAt: { type: string, format: date-time }
+      updatedAt: { type: string, format: date-time }
+    required: [_id, name, email, phone, favorite, createdAt, updatedAt]
+
+  ContactCreate:
+    type: object
+    properties:
+      name: { type: string }
+      email: { type: string, format: email }
+      phone: { type: string }
+      favorite: { type: boolean }
+    required: [name, email, phone]
+
+  ContactUpdate:
+    type: object
+    properties:
+      name: { type: string }
+      email: { type: string, format: email }
+      phone: { type: string }
+      favorite: { type: boolean }
+    additionalProperties: false
+    minProperties: 1
+
+  PaginatedContacts:
+    type: object
+    properties:
+      page: { type: integer, example: 1 }
+      limit: { type: integer, example: 20 }
+      total: { type: integer, example: 57 }
+      data:
+        type: array
+        items:
+          $ref: '#/components/schemas/Contact'
+
+  Error:
+    type: object
+    properties:
+      message: { type: string }
+      status: { type: integer }
+    required: [message]
+
+responses:
+  Unauthorized:
+    description: Неавторизовано
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Error'
+
+  NotFound:
+    description: Не знайдено
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Error'
+
+  ValidationError:
+    description: Некоректні дані
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Error'

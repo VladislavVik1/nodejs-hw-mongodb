@@ -1,15 +1,18 @@
-tags: [Contacts]
-summary: Видалити контакт
+tags:
+  - Contacts
+summary: Удалить контакт
 operationId: deleteContact
-description: Видаляє контакт за ID.
+description: Удаляет контакт по указанному ID
 security:
   - bearerAuth: []
 parameters:
   - $ref: '#/components/parameters/ContactId'
 responses:
   '204':
-    description: Видалено (без тіла відповіді)
+    description: Контакт удален (без тела ответа)
   '401':
     $ref: '#/components/responses/Unauthorized'
   '404':
     $ref: '#/components/responses/NotFound'
+  '500':
+    $ref: '#/components/responses/ServerError'

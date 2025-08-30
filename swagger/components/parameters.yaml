@@ -1,43 +1,43 @@
-parameters:
-  ContactId:
-    name: contactId
-    in: path
-    required: true
-    description: Mongo ObjectId контакту
-    schema:
-      type: string
-      example: 66cfc8f2b7d1a4e0b2a9f9c1
+ContactId:
+  name: contactId
+  in: path
+  required: true
+  schema:
+    type: string
+    example: 66cfc8f2b7d1a4e0b2a9f9c1
 
-  Page:
-    name: page
-    in: query
-    description: Номер сторінки (1..N)
-    schema:
-      type: integer
-      minimum: 1
-      default: 1
+Page:
+  name: page
+  in: query
+  required: false
+  schema:
+    type: integer
+    default: 1
+    example: 1
 
-  Limit:
-    name: limit
-    in: query
-    description: Кількість на сторінку
-    schema:
-      type: integer
-      minimum: 1
-      maximum: 100
-      default: 20
+Limit:
+  name: limit
+  in: query
+  required: false
+  schema:
+    type: integer
+    default: 20
+    example: 20
 
-  Favorite:
-    name: favorite
-    in: query
-    description: Фільтр улюблених
-    schema:
-      type: boolean
+Favorite:
+  name: favorite
+  in: query
+  required: false
+  schema:
+    type: boolean
+    example: true
 
-  Sort:
-    name: sort
-    in: query
-    description: Поле сортування (з '-' для DESC)
-    schema:
-      type: string
-      enum: [name, -name, createdAt, -createdAt]
+Sort:
+  name: sort
+  in: query
+  required: false
+  schema:
+    type: string
+    enum: [asc, desc]
+    default: asc
+    example: asc

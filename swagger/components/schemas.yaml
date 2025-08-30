@@ -1,66 +1,154 @@
-schemas:
-  Contact:
-    type: object
-    properties:
-      _id:
-        type: string
-        example: 66cfc8f2b7d1a4e0b2a9f9c1
-      name:
-        type: string
-        example: John Doe
-      email:
-        type: string
-        format: email
-        example: john@example.com
-      phone:
-        type: string
-        example: +380991112233
-      favorite:
-        type: boolean
-        default: false
-      createdAt:
-        type: string
-        format: date-time
-      updatedAt:
-        type: string
-        format: date-time
-    required: [_id, name, email, phone, favorite, createdAt, updatedAt]
+Contact:
+  type: object
+  properties:
+    _id:
+      type: string
+      example: 66cfc8f2b7d1a4e0b2a9f9c1
+    name:
+      type: string
+      example: John Doe
+    email:
+      type: string
+      format: email
+      example: john.doe@example.com
+    phone:
+      type: string
+      example: +380501234567
+    favorite:
+      type: boolean
+      example: false
+    owner:
+      type: string
+      example: 66cfc8f2b7d1a4e0b2a9f9c2
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+  required: [_id, name, email, phone, favorite, owner, createdAt, updatedAt]
 
-  ContactCreate:
-    type: object
-    properties:
-      name: { type: string }
-      email: { type: string, format: email }
-      phone: { type: string }
-      favorite: { type: boolean }
-    required: [name, email, phone]
+ContactCreate:
+  type: object
+  properties:
+    name:
+      type: string
+      example: John Doe
+    email:
+      type: string
+      format: email
+      example: john.doe@example.com
+    phone:
+      type: string
+      example: +380501234567
+    favorite:
+      type: boolean
+      example: false
+  required: [name, email, phone]
 
-  ContactUpdate:
-    type: object
-    properties:
-      name: { type: string }
-      email: { type: string, format: email }
-      phone: { type: string }
-      favorite: { type: boolean }
-    additionalProperties: false
-    minProperties: 1
+ContactUpdate:
+  type: object
+  properties:
+    name:
+      type: string
+      example: John Doe
+    email:
+      type: string
+      format: email
+      example: john.doe@example.com
+    phone:
+      type: string
+      example: +380501234567
+    favorite:
+      type: boolean
+      example: false
+  minProperties: 1
 
-  PaginatedContacts:
-    type: object
-    properties:
-      page: { type: integer, example: 1 }
-      limit: { type: integer, example: 20 }
-      total: { type: integer, example: 57 }
-      data:
-        type: array
-        items:
-          $ref: '#/components/schemas/Contact'
+PaginatedContacts:
+  type: object
+  properties:
+    total:
+      type: integer
+      example: 100
+    page:
+      type: integer
+      example: 1
+    limit:
+      type: integer
+      example: 20
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/Contact'
 
-  Error:
-    type: object
-    properties:
-      message:
-        type: string
-      status:
-        type: integer
-    required: [message]
+Error:
+  type: object
+  properties:
+    message:
+      type: string
+      example: Error message
+    code:
+      type: integer
+      example: 404
+  required: [message, code]
+
+User:
+  type: object
+  properties:
+    _id:
+      type: string
+      example: 66cfc8f2b7d1a4e0b2a9f9c2
+    email:
+      type: string
+      format: email
+      example: user@example.com
+    subscription:
+      type: string
+      enum: [starter, pro, business]
+      example: starter
+    avatarURL:
+      type: string
+      example: https://example.com/avatars/user.jpg
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+  required: [_id, email, subscription, createdAt, updatedAt]
+
+UserRegister:
+  type: object
+  properties:
+    email:
+      type: string
+      format: email
+      example: user@example.com
+    password:
+      type: string
+      format: password
+      example: password123
+  required: [email, password]
+
+UserLogin:
+  type: object
+  properties:
+    email:
+      type: string
+      format: email
+      example: user@example.com
+    password:
+      type: string
+      format: password
+      example: password123
+  required: [email, password]
+
+Token:
+  type: object
+  properties:
+    token:
+      type: string
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    user:
+      $ref: '#/components/schemas/User'
+  required: [token, user]
