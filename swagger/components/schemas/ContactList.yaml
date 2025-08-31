@@ -1,0 +1,15 @@
+type: object
+properties:
+  contacts:
+    type: array
+    items:
+      $ref: './Contact.yaml'
+  total:
+    type: integer
+    example: 100
+  page:
+    type: integer
+    example: 1
+  limit:
+    type: integer
+    example: 10

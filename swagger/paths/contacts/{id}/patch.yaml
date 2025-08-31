@@ -15,16 +15,35 @@ parameters:
 requestBody:
   required: true
   content:
-    application/json:
+    multipart/form-data:
       schema:
-        $ref: '../../../components/schemas/Contact.yaml'
+        type: object
+        properties:
+          name:
+            type: string
+          email:
+            type: string
+            format: email
+          phone:
+            type: string
+          favorite:
+            type: boolean
 responses:
   '200':
     description: Контакт обновлен
     content:
       application/json:
         schema:
-          $ref: '../../../components/schemas/Contact.yaml'
+          type: object
+          properties:
+            status:
+              type: string
+              example: success
+            message:
+              type: string
+              example: Contact updated successfully
+            data:
+              $ref: '../../../components/schemas/Contact.yaml'
   '404':
     $ref: '../../../components/responses/NotFoundError.yaml'
   '401':

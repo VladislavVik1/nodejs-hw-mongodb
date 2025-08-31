@@ -8,16 +8,39 @@ security:
 requestBody:
   required: true
   content:
-    application/json:
+    multipart/form-data:
       schema:
-        $ref: '../../components/schemas/Contact.yaml'
+        type: object
+        properties:
+          name:
+            type: string
+          email:
+            type: string
+            format: email
+          phone:
+            type: string
+          favorite:
+            type: boolean
+        required:
+          - name
+          - email
+          - phone
 responses:
   '201':
     description: Контакт создан
     content:
       application/json:
         schema:
-          $ref: '../../components/schemas/Contact.yaml'
+          type: object
+          properties:
+            status:
+              type: string
+              example: success
+            message:
+              type: string
+              example: Contact created successfully
+            data:
+              $ref: '../../components/schemas/Contact.yaml'
   '400':
     $ref: '../../components/responses/ValidationError.yaml'
   '401':

@@ -18,7 +18,16 @@ responses:
     content:
       application/json:
         schema:
-          $ref: '../../../components/schemas/Contact.yaml'
+          type: object
+          properties:
+            status:
+              type: string
+              example: success
+            message:
+              type: string
+              example: Contact retrieved successfully
+            data:
+              $ref: '../../../components/schemas/Contact.yaml'
   '404':
     $ref: '../../../components/responses/NotFoundError.yaml'
   '401':

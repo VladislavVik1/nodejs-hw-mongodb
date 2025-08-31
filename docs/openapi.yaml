@@ -27,34 +27,124 @@ paths:
       $ref: '../swagger/paths/contacts/get.yaml'
     post:
       $ref: '../swagger/paths/contacts/post.yaml'
-  /auth/register:
-    post:
-      $ref: '../swagger/paths/auth/register/post.yaml'
-  /auth/login:
-    post:
-      $ref: '../swagger/paths/auth/login/post.yaml'
-  /auth/logout:
-    post:
-      $ref: '../swagger/paths/auth/logout/post.yaml'
-  /auth/current:
-    get:
-      $ref: '../swagger/paths/auth/current/get.yaml'
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
   schemas:
+    ApiResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        message:
+          type: string
+          example: Operation completed successfully
+        data:
+          type: object
+          nullable: true
     Contact:
-      $ref: '../swagger/components/schemas/Contact.yaml'
+      type: object
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор контакта
+        name:
+          type: string
+          description: Имя контакта
+        email:
+          type: string
+          format: email
+          description: Email адрес
+        phone:
+          type: string
+          description: Номер телефона
+        favorite:
+          type: boolean
+          description: Флаг избранного контакта
+          default: false
+        owner:
+          $ref: '#/components/schemas/User'
+      required:
+        - name
+        - email
+        - phone
     User:
-      $ref: '../swagger/components/schemas/User.yaml'
-    AuthResponse:
-      $ref: '../swagger/components/schemas/AuthResponse.yaml'
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        subscription:
+          type: string
+          enum: [starter, pro, business]
+          default: starter
+    ContactList:
+      type: object
+      properties:
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
+        total:
+          type: integer
+          example: 100
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
   responses:
     UnauthorizedError:
-      $ref: '../swagger/components/responses/UnauthorizedError.yaml'
+      description: Не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+            properties:
+              status:
+                type: string
+                example: error
+              message:
+                type: string
+                example: Not authorized
     NotFoundError:
-      $ref: '../swagger/components/responses/NotFoundError.yaml'
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+            properties:
+              status:
+                type: string
+                example: error
+              message:
+                type: string
+                example: Not found
     ValidationError:
-      $ref: '../swagger/components/responses/ValidationError.yaml'
+      description: Ошибка валидации
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+            properties:
+              status:
+                type: string
+                example: error
+              message:
+                type: string
+                example: Validation error
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    path:
+                      type: string
+                    message:
+                      type: string
