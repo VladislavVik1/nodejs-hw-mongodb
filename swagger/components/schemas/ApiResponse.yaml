@@ -1,0 +1,11 @@
+type: object
+properties:
+  status:
+    type: string
+    example: success
+  message:
+    type: string
+    example: Operation completed successfully
+  data:
+    type: object
+    nullable: true

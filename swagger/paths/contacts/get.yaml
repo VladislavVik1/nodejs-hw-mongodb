@@ -34,15 +34,27 @@ responses:
         schema:
           type: object
           properties:
-            contacts:
-              type: array
-              items:
-                $ref: '../../components/schemas/Contact.yaml'
-            total:
-              type: integer
-            page:
-              type: integer
-            limit:
-              type: integer
+            status:
+              type: string
+              example: success
+            message:
+              type: string
+              example: Contacts retrieved successfully
+            data:
+              type: object
+              properties:
+                contacts:
+                  type: array
+                  items:
+                    $ref: '../../components/schemas/Contact.yaml'
+                total:
+                  type: integer
+                  example: 100
+                page:
+                  type: integer
+                  example: 1
+                limit:
+                  type: integer
+                  example: 20
   '401':
     $ref: '../../components/responses/UnauthorizedError.yaml'
