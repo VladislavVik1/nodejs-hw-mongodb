@@ -1,89 +1,97 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
+  title: Contacts API
   version: 1.0.0
-  title: Contact Management API
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  description: API для управления контактами с аутентификацией пользователей
-tags:
-  - name: Contacts
-    description: Операции с контактами
-  - name: Auth
-    description: Аутентификация пользователей
+  description: HW7 Swagger. Авторизація JWT. Контакти з пагінацією та фільтром favorite.
 servers:
-  - url: http://localhost:3000
   - url: https://nodejs-hw-mongodb-pfm6.onrender.com
-paths:
-  /contacts/{id}:
-    get:
-      $ref: '../swagger/paths/contacts/{id}/get.yaml'
-    patch:
-      $ref: '../swagger/paths/contacts/{id}/patch.yaml'
-    delete:
-      $ref: '../swagger/paths/contacts/{id}/delete.yaml'
-  /contacts:
-    get:
-      $ref: '../swagger/paths/contacts/get.yaml'
-    post:
-      $ref: '../swagger/paths/contacts/post.yaml'
+    description: Render prod
+tags:
+  - name: Auth
+  - name: Contacts
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Номер сторінки (починаючи з 1)
+      schema: { type: integer, minimum: 1, default: 1 }
+    LimitParam:
+      name: limit
+      in: query
+      description: Кількість елементів на сторінці
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    FavoriteParam:
+      name: favorite
+      in: query
+      description: Фільтр за обраними контактами
+      schema: { type: boolean }
+
   schemas:
-    ApiResponse:
+    ApiError:
       type: object
       properties:
-        status:
+        message: { type: string }
+      required: [message]
+
+    UserRef:
+      type: object
+      properties:
+        id:
           type: string
-          example: success
-        message:
+          description: ObjectId власника
+        email:
           type: string
-          example: Operation completed successfully
-        data:
-          type: object
-          nullable: true
+          format: email
+
     Contact:
       type: object
       properties:
         id:
           type: string
-          description: Уникальный идентификатор контакта
+          description: ObjectId
         name:
           type: string
-          description: Имя контакта
         email:
           type: string
           format: email
-          description: Email адрес
         phone:
           type: string
-          description: Номер телефона
+          description: Будь-який рядок номера телефону
         favorite:
           type: boolean
-          description: Флаг избранного контакта
           default: false
         owner:
-          $ref: '#/components/schemas/User'
-      required:
-        - name
-        - email
-        - phone
-    User:
+          $ref: '#/components/schemas/UserRef'
+      required: [id, name, email, phone, favorite]
+
+    ContactCreate:
       type: object
       properties:
-        id:
-          type: string
-        email:
-          type: string
-          format: email
-        subscription:
-          type: string
-          enum: [starter, pro, business]
-          default: starter
-    ContactList:
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        favorite: { type: boolean, default: false }
+      required: [name, email, phone]
+
+    ContactUpdate:
+      type: object
+      description: Часткове оновлення контакту; передаємо лише ті поля, які змінюємо
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        favorite: { type: boolean }
+      minProperties: 1
+
+    ContactsListResponse:
       type: object
       properties:
         contacts:
@@ -92,59 +100,195 @@ components:
             $ref: '#/components/schemas/Contact'
         total:
           type: integer
-          example: 100
+          description: Загальна кількість контактів (з урахуванням фільтра)
         page:
           type: integer
-          example: 1
         limit:
           type: integer
-          example: 10
-  responses:
-    UnauthorizedError:
-      description: Не авторизован
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ApiResponse'
-            properties:
-              status:
-                type: string
-                example: error
-              message:
-                type: string
-                example: Not authorized
-    NotFoundError:
-      description: Ресурс не найден
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ApiResponse'
-            properties:
-              status:
-                type: string
-                example: error
-              message:
-                type: string
-                example: Not found
-    ValidationError:
-      description: Ошибка валидации
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ApiResponse'
-            properties:
-              status:
-                type: string
-                example: error
-              message:
-                type: string
-                example: Validation error
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    path:
-                      type: string
-                    message:
-                      type: string
+      required: [contacts, total, page, limit]
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Логін
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 6 }
+              required: [email, password]
+      responses:
+        '200':
+          description: Успішний вхід
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+        '401':
+          description: Невірні облікові дані
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+
+  /api/contacts:
+    get:
+      tags: [Contacts]
+      summary: Отримати всі контакти з пагінацією та фільтром favorite
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/FavoriteParam'
+      responses:
+        '200':
+          description: Успішний запит
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactsListResponse'
+              examples:
+                ok:
+                  value:
+                    contacts:
+                      - id: "662f0a1f1c11111111111111"
+                        name: "John Doe"
+                        email: "john.doe@example.com"
+                        phone: "+1-202-555-0123"
+                        favorite: true
+                        owner:
+                          id: "662f09aa9b22222222222222"
+                          email: "owner@example.com"
+                    total: 42
+                    page: 1
+                    limit: 20
+        '401':
+          description: Не авторизовано
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+
+    post:
+      tags: [Contacts]
+      summary: Створити контакт
+      security: [ { bearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContactCreate' }
+            examples:
+              create:
+                value:
+                  name: "Jane Smith"
+                  email: "jane@example.com"
+                  phone: "+380501112233"
+                  favorite: false
+      responses:
+        '201':
+          description: Створено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Contact' }
+        '400':
+          description: Валідаційна помилка
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '401':
+          description: Не авторизовано
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+
+  /api/contacts/{contactId}:
+    patch:
+      tags: [Contacts]
+      summary: Часткове оновлення контакту
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContactUpdate' }
+            examples:
+              changeFavorite:
+                value: { favorite: true }
+              changeFields:
+                value: { name: "New Name", phone: "+380671234567" }
+      responses:
+        '200':
+          description: Оновлено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Contact' }
+        '400':
+          description: Валідаційна помилка
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '401':
+          description: Не авторизовано
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '404':
+          description: Не знайдено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+
+  /api/contacts/{contactId}/favorite:
+    patch:
+      tags: [Contacts]
+      summary: Оновити тільки поле favorite
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                favorite: { type: boolean }
+              required: [favorite]
+            examples:
+              setFav:
+                value: { favorite: true }
+      responses:
+        '200':
+          description: Оновлено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Contact' }
+        '400':
+          description: Валідаційна помилка
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '401':
+          description: Не авторизовано
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '404':
+          description: Не знайдено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
