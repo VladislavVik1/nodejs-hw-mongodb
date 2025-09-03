@@ -1,10 +1,21 @@
 openapi: 3.0.3
 info:
+<<<<<<< HEAD
   title: Contacts API (HW7)
   version: 1.0.0
 servers:
   - url: https://nodejs-hw-mongodb-pfm6.onrender.com
 tags:
+=======
+  title: Contacts API
+  version: 1.0.0
+  description: HW7 Swagger. Авторизація JWT. Контакти з пагінацією та фільтром favorite.
+servers:
+  - url: https://nodejs-hw-mongodb-pfm6.onrender.com
+    description: Render prod
+tags:
+  - name: Auth
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
   - name: Contacts
 
 components:
@@ -18,27 +29,58 @@ components:
     PageParam:
       name: page
       in: query
+<<<<<<< HEAD
       description: Номер страницы (начиная с 1)
+=======
+      description: Номер сторінки (починаючи з 1)
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
       schema: { type: integer, minimum: 1, default: 1 }
     LimitParam:
       name: limit
       in: query
+<<<<<<< HEAD
       description: Кол-во элементов на странице
+=======
+      description: Кількість елементів на сторінці
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
       schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
     FavoriteParam:
       name: favorite
       in: query
+<<<<<<< HEAD
       description: Фильтр «избранные». Маппится на поле isFavourite в базе.
       schema: { type: boolean }
 
   schemas:
     ApiEnvelope:
+=======
+      description: Фільтр за обраними контактами
+      schema: { type: boolean }
+
+  schemas:
+    ApiError:
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
       type: object
       required: [status, message, data]
       properties:
+<<<<<<< HEAD
         status: { type: string, enum: [success, error] }
         message: { type: string }
         data: {}
+=======
+        message: { type: string }
+      required: [message]
+
+    UserRef:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ObjectId власника
+        email:
+          type: string
+          format: email
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
 
     Contact:
       type: object
@@ -52,6 +94,7 @@ components:
       properties:
         id:
           type: string
+<<<<<<< HEAD
           description: Mongo ObjectId
         name:
           type: string
@@ -76,12 +119,30 @@ components:
         userId:
           type: string
           description: Владелец контакта (ObjectId User)
+=======
+          description: ObjectId
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          description: Будь-який рядок номера телефону
+        favorite:
+          type: boolean
+          default: false
+        owner:
+          $ref: '#/components/schemas/UserRef'
+      required: [id, name, email, phone, favorite]
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
 
     ContactCreate:
       type: object
       required: [name, phoneNumber]
       properties:
         name: { type: string }
+<<<<<<< HEAD
         phoneNumber: { type: string }
         email: { type: string, format: email }
         isFavourite: { type: boolean }
@@ -92,6 +153,24 @@ components:
           description: Передавайте только если нет авторизации и сервер ожидает userId в body
 
     ContactUpdate:
+=======
+        email: { type: string, format: email }
+        phone: { type: string }
+        favorite: { type: boolean, default: false }
+      required: [name, email, phone]
+
+    ContactUpdate:
+      type: object
+      description: Часткове оновлення контакту; передаємо лише ті поля, які змінюємо
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        favorite: { type: boolean }
+      minProperties: 1
+
+    ContactsListResponse:
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
       type: object
       description: Передаём только изменяемые поля
       properties:
@@ -109,6 +188,7 @@ components:
       properties:
         contacts:
           type: array
+<<<<<<< HEAD
           items: { $ref: '#/components/schemas/Contact' }
         total: { type: integer }
         page: { type: integer }
@@ -120,12 +200,61 @@ paths:
       tags: [Contacts]
       summary: Получить список контактов с пагинацией и фильтром избранного
       # security: [ { bearerAuth: [] } ]  # включи, если защищено
+=======
+          items:
+            $ref: '#/components/schemas/Contact'
+        total:
+          type: integer
+          description: Загальна кількість контактів (з урахуванням фільтра)
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [contacts, total, page, limit]
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Логін
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 6 }
+              required: [email, password]
+      responses:
+        '200':
+          description: Успішний вхід
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+        '401':
+          description: Невірні облікові дані
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+
+  /api/contacts:
+    get:
+      tags: [Contacts]
+      summary: Отримати всі контакти з пагінацією та фільтром favorite
+      security: [ { bearerAuth: [] } ]
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/LimitParam'
         - $ref: '#/components/parameters/FavoriteParam'
       responses:
         '200':
+<<<<<<< HEAD
           description: OK
           content:
             application/json:
@@ -198,10 +327,66 @@ paths:
               examples:
                 badreq:
                   value: { status: error, message: "Validation error", data: { field: "name" } }
+=======
+          description: Успішний запит
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactsListResponse'
+              examples:
+                ok:
+                  value:
+                    contacts:
+                      - id: "662f0a1f1c11111111111111"
+                        name: "John Doe"
+                        email: "john.doe@example.com"
+                        phone: "+1-202-555-0123"
+                        favorite: true
+                        owner:
+                          id: "662f09aa9b22222222222222"
+                          email: "owner@example.com"
+                    total: 42
+                    page: 1
+                    limit: 20
         '401':
           description: Не авторизовано
           content:
             application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+
+    post:
+      tags: [Contacts]
+      summary: Створити контакт
+      security: [ { bearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContactCreate' }
+            examples:
+              create:
+                value:
+                  name: "Jane Smith"
+                  email: "jane@example.com"
+                  phone: "+380501112233"
+                  favorite: false
+      responses:
+        '201':
+          description: Створено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Contact' }
+        '400':
+          description: Валідаційна помилка
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
+        '401':
+          description: Не авторизовано
+          content:
+            application/json:
+<<<<<<< HEAD
               schema: { $ref: '#/components/schemas/ApiEnvelope' }
               examples:
                 unauth:
@@ -249,6 +434,15 @@ paths:
       tags: [Contacts]
       summary: Частично обновить контакт (multipart/form-data)
       # security: [ { bearerAuth: [] } ]
+=======
+              schema: { $ref: '#/components/schemas/ApiError' }
+
+  /api/contacts/{contactId}:
+    patch:
+      tags: [Contacts]
+      summary: Часткове оновлення контакту
+      security: [ { bearerAuth: [] } ]
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
       parameters:
         - name: contactId
           in: path
@@ -257,6 +451,7 @@ paths:
       requestBody:
         required: true
         content:
+<<<<<<< HEAD
           multipart/form-data:
             schema: { $ref: '#/components/schemas/ContactUpdate' }
       responses:
@@ -278,10 +473,31 @@ paths:
               examples:
                 badreq:
                   value: { status: error, message: "Validation error", data: { field: "email" } }
+=======
+          application/json:
+            schema: { $ref: '#/components/schemas/ContactUpdate' }
+            examples:
+              changeFavorite:
+                value: { favorite: true }
+              changeFields:
+                value: { name: "New Name", phone: "+380671234567" }
+      responses:
+        '200':
+          description: Оновлено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Contact' }
+        '400':
+          description: Валідаційна помилка
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
         '401':
           description: Не авторизовано
           content:
             application/json:
+<<<<<<< HEAD
               schema: { $ref: '#/components/schemas/ApiEnvelope' }
               examples:
                 unauth:
@@ -299,11 +515,26 @@ paths:
       tags: [Contacts]
       summary: Удалить контакт
       # security: [ { bearerAuth: [] } ]
+=======
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '404':
+          description: Не знайдено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+
+  /api/contacts/{contactId}/favorite:
+    patch:
+      tags: [Contacts]
+      summary: Оновити тільки поле favorite
+      security: [ { bearerAuth: [] } ]
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
       parameters:
         - name: contactId
           in: path
           required: true
           schema: { type: string }
+<<<<<<< HEAD
       responses:
         '200':
           description: Удалено
@@ -321,10 +552,36 @@ paths:
               examples:
                 ok:
                   value: { status: success, message: "Deleted", data: null }
+=======
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                favorite: { type: boolean }
+              required: [favorite]
+            examples:
+              setFav:
+                value: { favorite: true }
+      responses:
+        '200':
+          description: Оновлено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Contact' }
+        '400':
+          description: Валідаційна помилка
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
         '401':
           description: Не авторизовано
           content:
             application/json:
+<<<<<<< HEAD
               schema: { $ref: '#/components/schemas/ApiEnvelope' }
               examples:
                 unauth:
@@ -337,3 +594,11 @@ paths:
               examples:
                 notfound:
                   value: { status: error, message: "Not found", data: null }
+=======
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '404':
+          description: Не знайдено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+>>>>>>> 8c4533ec47c8a7cc9397cff9d986f7085696bb9a
