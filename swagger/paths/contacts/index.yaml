@@ -1,0 +1,78 @@
+get:
+  tags: [Contacts]
+  summary: Получить список контактов с пагинацией и фильтром избранного
+  # security: [ { bearerAuth: [] } ]  # включи, если защищено
+  parameters:
+    - name: page
+      in: query
+      description: Номер страницы (1…)
+      schema: { type: integer, minimum: 1, default: 1 }
+    - name: limit
+      in: query
+      description: Кол-во элементов на странице
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    - name: favorite
+      in: query
+      description: Фильтр «избранные» (маппится на поле isFavourite)
+      schema: { type: boolean }
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: ../../components/schemas/ApiEnvelope.yaml
+              - type: object
+                properties:
+                  data:
+                    $ref: ../../components/schemas/ContactsListData.yaml
+          examples:
+            ok:
+              value:
+                status: success
+                message: Contacts list
+                data:
+                  contacts:
+                    - id: "6640d1f3aa11bb22cc33dd44"
+                      name: "John Doe"
+                      phoneNumber: "+1-202-555-0123"
+                      email: "john@example.com"
+                      isFavourite: true
+                      photo: "https://res.cloudinary.com/demo/image/upload/v123/photo.jpg"
+                      contactType: personal
+                      userId: "663fa5a0e0e0e0e0e0e0e0e0"
+                  total: 42
+                  page: 1
+                  limit: 20
+
+post:
+  tags: [Contacts]
+  summary: Создать контакт (multipart/form-data)
+  # security: [ { bearerAuth: [] } ]
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          $ref: ../../components/schemas/ContactCreate.yaml
+        encoding:
+          name: { style: form }
+          phoneNumber: { style: form }
+          email: { style: form }
+          isFavourite: { style: form }
+          photo: { style: form }
+          contactType: { style: form }
+          userId: { style: form }
+  responses:
+    '201':
+      description: Создано
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: ../../components/schemas/ApiEnvelope.yaml
+              - type: object
+                properties:
+                  data:
+                    $ref: ../../components/schemas/Contact.yaml

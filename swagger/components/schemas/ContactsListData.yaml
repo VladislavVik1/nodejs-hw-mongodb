@@ -1,0 +1,10 @@
+type: object
+required: [contacts, total, page, limit]
+properties:
+  contacts:
+    type: array
+    items:
+      $ref: ../schemas/Contact.yaml
+  total: { type: integer }
+  page: { type: integer }
+  limit: { type: integer }
