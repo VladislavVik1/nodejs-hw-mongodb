@@ -1,0 +1,70 @@
+parameters:
+  - name: contactId
+    in: path
+    required: true
+    schema: { type: string }
+
+get:
+  tags: [Contacts]
+  summary: Получить контакт по id
+  # security: [ { bearerAuth: [] } ]
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: ../../../components/schemas/ApiEnvelope.yaml
+              - type: object
+                properties:
+                  data:
+                    $ref: ../../../components/schemas/Contact.yaml
+    '404':
+      description: Не найдено
+
+patch:
+  tags: [Contacts]
+  summary: Частично обновить контакт (multipart/form-data)
+  # security: [ { bearerAuth: [] } ]
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          $ref: ../../../components/schemas/ContactUpdate.yaml
+  responses:
+    '200':
+      description: Обновлено
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: ../../../components/schemas/ApiEnvelope.yaml
+              - type: object
+                properties:
+                  data:
+                    $ref: ../../../components/schemas/Contact.yaml
+    '404':
+      description: Не найдено
+
+delete:
+  tags: [Contacts]
+  summary: Удалить контакт
+  # security: [ { bearerAuth: [] } ]
+  responses:
+    '200':
+      description: Удалено
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: ../../../components/schemas/ApiEnvelope.yaml
+              - type: object
+                properties:
+                  data:
+                    type: object
+                    nullable: true
+                    description: Может вернуться удалённый объект или null
+    '404':
+      description: Не найдено

@@ -1,0 +1,12 @@
+type: object
+required: [name, phoneNumber]
+properties:
+  name: { type: string }
+  phoneNumber: { type: string }
+  email: { type: string, format: email }
+  isFavourite: { type: boolean }
+  photo: { type: string, format: uri, description: 'Можно сразу URL; если файл — middleware положит сюда URL' }
+  contactType: { type: string, enum: [work, home, personal] }
+  userId:
+    type: string
+    description: Передавайте только если сервер ждёт userId без авторизации

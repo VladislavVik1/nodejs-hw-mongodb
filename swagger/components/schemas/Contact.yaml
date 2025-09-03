@@ -1,30 +1,35 @@
 type: object
+required:
+  - id
+  - name
+  - phoneNumber
+  - isFavourite
+  - contactType
+  - userId
 properties:
   id:
     type: string
-    description: Уникальный идентификатор контакта
+    description: Mongo ObjectId
   name:
     type: string
-    description: Имя контакта
+  phoneNumber:
+    type: string
   email:
     type: string
     format: email
-    description: Email адрес
-  phone:
-    type: string
-    description: Номер телефона
-  favorite:
+    nullable: true
+  isFavourite:
     type: boolean
-    description: Флаг избранного контакта
     default: false
-  owner:
-    $ref: './User.yaml'
-required:
-  - name
-  - email
-  - phone
-example:
-  name: John Doe
-  email: john.doe@example.com
-  phone: "(123) 456-7890"
-  favorite: true
+  photo:
+    type: string
+    format: uri
+    nullable: true
+    description: URL изображения (Cloudinary)
+  contactType:
+    type: string
+    enum: [work, home, personal]
+    default: personal
+  userId:
+    type: string
+    description: ObjectId владельца (User)
