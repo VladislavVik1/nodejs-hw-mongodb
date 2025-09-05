@@ -1,15 +1,33 @@
 type: object
+required:
+  - items
+  - page
+  - perPage
+  - totalItems
+  - totalPages
+  - hasPreviousPage
+  - hasNextPage
 properties:
-  contacts:
+  items:
     type: array
     items:
       $ref: './Contact.yaml'
-  total:
-    type: integer
-    example: 100
   page:
     type: integer
     example: 1
-  limit:
+  perPage:
     type: integer
-    example: 10
+    example: 20
+  totalItems:
+    type: integer
+    example: 100
+  totalPages:
+    type: integer
+    example: 5
+  hasPreviousPage:
+    type: boolean
+    example: false
+  hasNextPage:
+    type: boolean
+    example: true
+additionalProperties: false

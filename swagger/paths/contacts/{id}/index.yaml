@@ -1,13 +1,11 @@
 parameters:
-  - name: contactId
-    in: path
-    required: true
-    schema: { type: string }
+  - $ref: ../../../components/parameters.yaml#/ContactId
 
 get:
   tags: [Contacts]
   summary: Получить контакт по id
-  # security: [ { bearerAuth: [] } ]
+  security:
+    - bearerAuth: []
   responses:
     '200':
       description: OK
@@ -15,18 +13,27 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: ../../../components/schemas/ApiEnvelope.yaml
+              - $ref: ../../../components/schemas/ApiResponse.yaml
               - type: object
                 properties:
                   data:
                     $ref: ../../../components/schemas/Contact.yaml
+    '401':
+      $ref: ../../../components/responses/UnauthorizedError.yaml
     '404':
       description: Не найдено
+      content:
+        application/json:
+          schema: { $ref: ../../../components/schemas/ApiResponse.yaml }
+          examples:
+            notfound:
+              value: { status: error, message: "Not found", data: null }
 
 patch:
   tags: [Contacts]
   summary: Частично обновить контакт (multipart/form-data)
-  # security: [ { bearerAuth: [] } ]
+  security:
+    - bearerAuth: []
   requestBody:
     required: true
     content:
@@ -40,31 +47,39 @@ patch:
         application/json:
           schema:
             allOf:
-              - $ref: ../../../components/schemas/ApiEnvelope.yaml
+              - $ref: ../../../components/schemas/ApiResponse.yaml
               - type: object
                 properties:
                   data:
                     $ref: ../../../components/schemas/Contact.yaml
+    '400':
+      $ref: ../../../components/responses/ValidationError.yaml
+    '401':
+      $ref: ../../../components/responses/UnauthorizedError.yaml
     '404':
       description: Не найдено
+      content:
+        application/json:
+          schema: { $ref: ../../../components/schemas/ApiResponse.yaml }
+          examples:
+            notfound:
+              value: { status: error, message: "Not found", data: null }
 
 delete:
   tags: [Contacts]
   summary: Удалить контакт
-  # security: [ { bearerAuth: [] } ]
+  security:
+    - bearerAuth: []
   responses:
-    '200':
-      description: Удалено
-      content:
-        application/json:
-          schema:
-            allOf:
-              - $ref: ../../../components/schemas/ApiEnvelope.yaml
-              - type: object
-                properties:
-                  data:
-                    type: object
-                    nullable: true
-                    description: Может вернуться удалённый объект или null
+    '204':
+      description: Удалено, без тела
+    '401':
+      $ref: ../../../components/responses/UnauthorizedError.yaml
     '404':
       description: Не найдено
+      content:
+        application/json:
+          schema: { $ref: ../../../components/schemas/ApiResponse.yaml }
+          examples:
+            notfound:
+              value: { status: error, message: "Not found", data: null }

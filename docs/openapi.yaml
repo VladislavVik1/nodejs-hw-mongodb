@@ -18,18 +18,40 @@ components:
     PageParam:
       name: page
       in: query
-      description: Номер страницы (начиная с 1)
+      description: Номер страницы (>=1)
       schema: { type: integer, minimum: 1, default: 1 }
-    LimitParam:
-      name: limit
+    PerPageParam:
+      name: perPage
       in: query
       description: Кол-во элементов на странице
       schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
-    FavoriteParam:
-      name: favorite
+    IsFavouriteParam:
+      name: isFavourite
       in: query
-      description: Фильтр «избранные». Маппится на поле isFavourite в базе.
+      description: Фильтр «избранные»
       schema: { type: boolean }
+    TypeParam:
+      name: type
+      in: query
+      description: Фильтр по типу контакта
+      schema:
+        type: string
+        enum: [work, home, personal]
+    SortByParam:
+      name: sortBy
+      in: query
+      description: Поле сортировки
+      schema:
+        type: string
+        enum: [name, email, phoneNumber, contactType, createdAt, updatedAt]
+    SortOrderParam:
+      name: sortOrder
+      in: query
+      description: Направление сортировки
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: asc
 
   schemas:
     ApiEnvelope:
@@ -42,42 +64,26 @@ components:
 
     Contact:
       type: object
-      required:
-        - id
-        - name
-        - phoneNumber
-        - isFavourite
-        - contactType
-        - userId
+      required: [id, name, phoneNumber, isFavourite, contactType, userId]
       properties:
-        id:
-          type: string
-          description: Mongo ObjectId
-        name:
-          type: string
-        phoneNumber:
-          type: string
-        email:
-          type: string
-          format: email
-          nullable: true
-        isFavourite:
-          type: boolean
-          default: false
+        id: { type: string, description: Mongo ObjectId }
+        name: { type: string }
+        phoneNumber: { type: string }
+        email: { type: string, format: email, nullable: true }
+        isFavourite: { type: boolean, default: false }
         photo:
           type: string
           format: uri
           nullable: true
-          description: URL изображения (Cloudinary)
+          description: URL изображения (например, Cloudinary)
         contactType:
           type: string
           enum: [work, home, personal]
           default: personal
-        userId:
-          type: string
-          description: Владелец контакта (ObjectId User)
+        userId: { type: string, description: Владелец контакта (ObjectId User) }
 
-    ContactCreate:
+    # Тело создания: photo — бинарный файл; userId не передаём
+    ContactCreateForm:
       type: object
       required: [name, phoneNumber]
       properties:
@@ -85,45 +91,63 @@ components:
         phoneNumber: { type: string }
         email: { type: string, format: email }
         isFavourite: { type: boolean }
-        photo: { type: string, format: uri }
         contactType: { type: string, enum: [work, home, personal] }
-        userId:
+        photo:
           type: string
-          description: Передавайте только если нет авторизации и сервер ожидает userId в body
+          format: binary
+          description: Файл изображения (multipart/form-data)
+      additionalProperties: false
 
-    ContactUpdate:
+    # Тело обновления: любые поля; photo — бинарный файл
+    ContactUpdateForm:
       type: object
-      description: Передаём только изменяемые поля
       properties:
         name: { type: string }
         phoneNumber: { type: string }
         email: { type: string, format: email }
         isFavourite: { type: boolean }
-        photo: { type: string, format: uri }
         contactType: { type: string, enum: [work, home, personal] }
+        photo:
+          type: string
+          format: binary
+          description: Новый файл изображения (multipart/form-data)
       minProperties: 1
+      additionalProperties: false
 
+    # Пагинация как в модуле 4
     ContactsListData:
       type: object
-      required: [contacts, total, page, limit]
+      required:
+        - items
+        - page
+        - perPage
+        - totalItems
+        - totalPages
+        - hasPreviousPage
+        - hasNextPage
       properties:
-        contacts:
+        items:
           type: array
           items: { $ref: '#/components/schemas/Contact' }
-        total: { type: integer }
         page: { type: integer }
-        limit: { type: integer }
+        perPage: { type: integer }
+        totalItems: { type: integer }
+        totalPages: { type: integer }
+        hasPreviousPage: { type: boolean }
+        hasNextPage: { type: boolean }
 
 paths:
   /contacts:
     get:
       tags: [Contacts]
-      summary: Получить список контактов с пагинацией и фильтром избранного
-      # security: [ { bearerAuth: [] } ]  # включи, если защищено
+      summary: Получить список контактов (пагинация/фильтры/сортировка)
       parameters:
         - $ref: '#/components/parameters/PageParam'
-        - $ref: '#/components/parameters/LimitParam'
-        - $ref: '#/components/parameters/FavoriteParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/IsFavouriteParam'
+        - $ref: '#/components/parameters/TypeParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
       responses:
         '200':
           description: OK
@@ -141,7 +165,7 @@ paths:
                     status: success
                     message: Contacts list
                     data:
-                      contacts:
+                      items:
                         - id: "6640d1f3aa11bb22cc33dd44"
                           name: "John Doe"
                           phoneNumber: "+1-202-555-0123"
@@ -150,11 +174,14 @@ paths:
                           photo: "https://res.cloudinary.com/demo/image/upload/v123/photo.jpg"
                           contactType: personal
                           userId: "663fa5a0e0e0e0e0e0e0e0e0"
-                      total: 42
                       page: 1
-                      limit: 20
+                      perPage: 20
+                      totalItems: 42
+                      totalPages: 3
+                      hasPreviousPage: false
+                      hasNextPage: true
         '401':
-          description: Не авторизовано (если включена защита)
+          description: Не авторизовано
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ApiEnvelope' }
@@ -164,21 +191,12 @@ paths:
 
     post:
       tags: [Contacts]
-      summary: Создать контакт (multipart/form-data)
-      # security: [ { bearerAuth: [] } ]
+      summary: Создать контакт (multipart/form-data, с фото)
       requestBody:
         required: true
         content:
           multipart/form-data:
-            schema: { $ref: '#/components/schemas/ContactCreate' }
-            encoding:
-              name: { style: form }
-              phoneNumber: { style: form }
-              email: { style: form }
-              isFavourite: { style: form }
-              photo: { style: form }
-              contactType: { style: form }
-              userId: { style: form }
+            schema: { $ref: '#/components/schemas/ContactCreateForm' }
       responses:
         '201':
           description: Создано
@@ -211,7 +229,6 @@ paths:
     get:
       tags: [Contacts]
       summary: Получить контакт по id
-      # security: [ { bearerAuth: [] } ]
       parameters:
         - name: contactId
           in: path
@@ -248,7 +265,6 @@ paths:
     patch:
       tags: [Contacts]
       summary: Частично обновить контакт (multipart/form-data)
-      # security: [ { bearerAuth: [] } ]
       parameters:
         - name: contactId
           in: path
@@ -258,7 +274,7 @@ paths:
         required: true
         content:
           multipart/form-data:
-            schema: { $ref: '#/components/schemas/ContactUpdate' }
+            schema: { $ref: '#/components/schemas/ContactUpdateForm' }
       responses:
         '200':
           description: Обновлено
@@ -298,42 +314,11 @@ paths:
     delete:
       tags: [Contacts]
       summary: Удалить контакт
-      # security: [ { bearerAuth: [] } ]
       parameters:
         - name: contactId
           in: path
           required: true
           schema: { type: string }
       responses:
-        '200':
-          description: Удалено
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/ApiEnvelope'
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        nullable: true
-                        description: Может возвращаться удалённый объект или null
-              examples:
-                ok:
-                  value: { status: success, message: "Deleted", data: null }
-        '401':
-          description: Не авторизовано
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ApiEnvelope' }
-              examples:
-                unauth:
-                  value: { status: error, message: "Not authorized", data: null }
-        '404':
-          description: Не найдено
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ApiEnvelope' }
-              examples:
-                notfound:
-                  value: { status: error, message: "Not found", data: null }
+        '204':
+          description: Удалено, без тела

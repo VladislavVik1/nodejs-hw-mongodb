@@ -1,10 +1,26 @@
 type: object
-required: [contacts, total, page, limit]
+required:
+  - items
+  - page
+  - perPage
+  - totalItems
+  - totalPages
+  - hasPreviousPage
+  - hasNextPage
 properties:
-  contacts:
+  items:
     type: array
     items:
       $ref: ../schemas/Contact.yaml
-  total: { type: integer }
-  page: { type: integer }
-  limit: { type: integer }
+  page:
+    type: integer
+  perPage:
+    type: integer
+  totalItems:
+    type: integer
+  totalPages:
+    type: integer
+  hasPreviousPage:
+    type: boolean
+  hasNextPage:
+    type: boolean

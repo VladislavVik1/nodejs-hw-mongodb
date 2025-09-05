@@ -20,16 +20,25 @@
         "tags": [
           "Contacts"
         ],
-        "summary": "Получить список контактов с пагинацией и фильтром избранного",
+        "summary": "Получить список контактов (пагинация/фильтры/сортировка)",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageParam"
           },
           {
-            "$ref": "#/components/parameters/LimitParam"
+            "$ref": "#/components/parameters/PerPageParam"
           },
           {
-            "$ref": "#/components/parameters/FavoriteParam"
+            "$ref": "#/components/parameters/IsFavouriteParam"
+          },
+          {
+            "$ref": "#/components/parameters/TypeParam"
+          },
+          {
+            "$ref": "#/components/parameters/SortByParam"
+          },
+          {
+            "$ref": "#/components/parameters/SortOrderParam"
           }
         ],
         "responses": {
@@ -58,7 +67,7 @@
                       "status": "success",
                       "message": "Contacts list",
                       "data": {
-                        "contacts": [
+                        "items": [
                           {
                             "id": "6640d1f3aa11bb22cc33dd44",
                             "name": "John Doe",
@@ -70,9 +79,12 @@
                             "userId": "663fa5a0e0e0e0e0e0e0e0e0"
                           }
                         ],
-                        "total": 42,
                         "page": 1,
-                        "limit": 20
+                        "perPage": 20,
+                        "totalItems": 42,
+                        "totalPages": 3,
+                        "hasPreviousPage": false,
+                        "hasNextPage": true
                       }
                     }
                   }
@@ -81,7 +93,7 @@
             }
           },
           "401": {
-            "description": "Не авторизовано (если включена защита)",
+            "description": "Не авторизовано",
             "content": {
               "application/json": {
                 "schema": {
@@ -105,36 +117,13 @@
         "tags": [
           "Contacts"
         ],
-        "summary": "Создать контакт (multipart/form-data)",
+        "summary": "Создать контакт (multipart/form-data, с фото)",
         "requestBody": {
           "required": true,
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/ContactCreate"
-              },
-              "encoding": {
-                "name": {
-                  "style": "form"
-                },
-                "phoneNumber": {
-                  "style": "form"
-                },
-                "email": {
-                  "style": "form"
-                },
-                "isFavourite": {
-                  "style": "form"
-                },
-                "photo": {
-                  "style": "form"
-                },
-                "contactType": {
-                  "style": "form"
-                },
-                "userId": {
-                  "style": "form"
-                }
+                "$ref": "#/components/schemas/ContactCreateForm"
               }
             }
           }
@@ -304,7 +293,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/ContactUpdate"
+                "$ref": "#/components/schemas/ContactUpdateForm"
               }
             }
           }
@@ -409,76 +398,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Удалено",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ApiEnvelope"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "type": "object",
-                          "nullable": true,
-                          "description": "Может возвращаться удалённый объект или null"
-                        }
-                      }
-                    }
-                  ]
-                },
-                "examples": {
-                  "ok": {
-                    "value": {
-                      "status": "success",
-                      "message": "Deleted",
-                      "data": null
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Не авторизовано",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiEnvelope"
-                },
-                "examples": {
-                  "unauth": {
-                    "value": {
-                      "status": "error",
-                      "message": "Not authorized",
-                      "data": null
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Не найдено",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiEnvelope"
-                },
-                "examples": {
-                  "notfound": {
-                    "value": {
-                      "status": "error",
-                      "message": "Not found",
-                      "data": null
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Удалено, без тела"
           }
         }
       }
@@ -496,15 +417,15 @@
       "PageParam": {
         "name": "page",
         "in": "query",
-        "description": "Номер страницы (начиная с 1)",
+        "description": "Номер страницы (>=1)",
         "schema": {
           "type": "integer",
           "minimum": 1,
           "default": 1
         }
       },
-      "LimitParam": {
-        "name": "limit",
+      "PerPageParam": {
+        "name": "perPage",
         "in": "query",
         "description": "Кол-во элементов на странице",
         "schema": {
@@ -514,12 +435,54 @@
           "default": 20
         }
       },
-      "FavoriteParam": {
-        "name": "favorite",
+      "IsFavouriteParam": {
+        "name": "isFavourite",
         "in": "query",
-        "description": "Фильтр «избранные». Маппится на поле isFavourite в базе.",
+        "description": "Фильтр «избранные»",
         "schema": {
           "type": "boolean"
+        }
+      },
+      "TypeParam": {
+        "name": "type",
+        "in": "query",
+        "description": "Фильтр по типу контакта",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "work",
+            "home",
+            "personal"
+          ]
+        }
+      },
+      "SortByParam": {
+        "name": "sortBy",
+        "in": "query",
+        "description": "Поле сортировки",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "name",
+            "email",
+            "phoneNumber",
+            "contactType",
+            "createdAt",
+            "updatedAt"
+          ]
+        }
+      },
+      "SortOrderParam": {
+        "name": "sortOrder",
+        "in": "query",
+        "description": "Направление сортировки",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
         }
       }
     },
@@ -579,7 +542,7 @@
             "type": "string",
             "format": "uri",
             "nullable": true,
-            "description": "URL изображения (Cloudinary)"
+            "description": "URL изображения (например, Cloudinary)"
           },
           "contactType": {
             "type": "string",
@@ -596,7 +559,7 @@
           }
         }
       },
-      "ContactCreate": {
+      "ContactCreateForm": {
         "type": "object",
         "required": [
           "name",
@@ -616,10 +579,6 @@
           "isFavourite": {
             "type": "boolean"
           },
-          "photo": {
-            "type": "string",
-            "format": "uri"
-          },
           "contactType": {
             "type": "string",
             "enum": [
@@ -628,15 +587,16 @@
               "personal"
             ]
           },
-          "userId": {
+          "photo": {
             "type": "string",
-            "description": "Передавайте только если нет авторизации и сервер ожидает userId в body"
+            "format": "binary",
+            "description": "Файл изображения (multipart/form-data)"
           }
-        }
+        },
+        "additionalProperties": false
       },
-      "ContactUpdate": {
+      "ContactUpdateForm": {
         "type": "object",
-        "description": "Передаём только изменяемые поля",
         "properties": {
           "name": {
             "type": "string"
@@ -651,10 +611,6 @@
           "isFavourite": {
             "type": "boolean"
           },
-          "photo": {
-            "type": "string",
-            "format": "uri"
-          },
           "contactType": {
             "type": "string",
             "enum": [
@@ -662,33 +618,51 @@
               "home",
               "personal"
             ]
+          },
+          "photo": {
+            "type": "string",
+            "format": "binary",
+            "description": "Новый файл изображения (multipart/form-data)"
           }
         },
-        "minProperties": 1
+        "minProperties": 1,
+        "additionalProperties": false
       },
       "ContactsListData": {
         "type": "object",
         "required": [
-          "contacts",
-          "total",
+          "items",
           "page",
-          "limit"
+          "perPage",
+          "totalItems",
+          "totalPages",
+          "hasPreviousPage",
+          "hasNextPage"
         ],
         "properties": {
-          "contacts": {
+          "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Contact"
             }
           },
-          "total": {
-            "type": "integer"
-          },
           "page": {
             "type": "integer"
           },
-          "limit": {
+          "perPage": {
             "type": "integer"
+          },
+          "totalItems": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "hasPreviousPage": {
+            "type": "boolean"
+          },
+          "hasNextPage": {
+            "type": "boolean"
           }
         }
       }

@@ -1,20 +1,13 @@
 get:
   tags: [Contacts]
-  summary: Получить список контактов с пагинацией и фильтром избранного
-  # security: [ { bearerAuth: [] } ]  # включи, если защищено
+  summary: Получить список контактов (пагинация/фильтры/сортировка)
   parameters:
-    - name: page
-      in: query
-      description: Номер страницы (1…)
-      schema: { type: integer, minimum: 1, default: 1 }
-    - name: limit
-      in: query
-      description: Кол-во элементов на странице
-      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
-    - name: favorite
-      in: query
-      description: Фильтр «избранные» (маппится на поле isFavourite)
-      schema: { type: boolean }
+    - $ref: ../../components/parameters.yaml#/Page
+    - $ref: ../../components/parameters.yaml#/PerPage
+    - $ref: ../../components/parameters.yaml#/IsFavourite
+    - $ref: ../../components/parameters.yaml#/Type
+    - $ref: ../../components/parameters.yaml#/SortBy
+    - $ref: ../../components/parameters.yaml#/SortOrder
   responses:
     '200':
       description: OK
@@ -22,7 +15,7 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: ../../components/schemas/ApiEnvelope.yaml
+              - $ref: ../../components/schemas/ApiResponse.yaml
               - type: object
                 properties:
                   data:
@@ -33,7 +26,7 @@ get:
                 status: success
                 message: Contacts list
                 data:
-                  contacts:
+                  items:
                     - id: "6640d1f3aa11bb22cc33dd44"
                       name: "John Doe"
                       phoneNumber: "+1-202-555-0123"
@@ -42,28 +35,30 @@ get:
                       photo: "https://res.cloudinary.com/demo/image/upload/v123/photo.jpg"
                       contactType: personal
                       userId: "663fa5a0e0e0e0e0e0e0e0e0"
-                  total: 42
                   page: 1
-                  limit: 20
+                  perPage: 20
+                  totalItems: 42
+                  totalPages: 3
+                  hasPreviousPage: false
+                  hasNextPage: true
+    '401':
+      description: Не авторизовано
+      content:
+        application/json:
+          schema: { $ref: ../../components/schemas/ApiResponse.yaml }
+          examples:
+            unauth:
+              value: { status: error, message: "Not authorized", data: null }
 
 post:
   tags: [Contacts]
   summary: Создать контакт (multipart/form-data)
-  # security: [ { bearerAuth: [] } ]
   requestBody:
     required: true
     content:
       multipart/form-data:
         schema:
           $ref: ../../components/schemas/ContactCreate.yaml
-        encoding:
-          name: { style: form }
-          phoneNumber: { style: form }
-          email: { style: form }
-          isFavourite: { style: form }
-          photo: { style: form }
-          contactType: { style: form }
-          userId: { style: form }
   responses:
     '201':
       description: Создано
@@ -71,8 +66,24 @@ post:
         application/json:
           schema:
             allOf:
-              - $ref: ../../components/schemas/ApiEnvelope.yaml
+              - $ref: ../../components/schemas/ApiResponse.yaml
               - type: object
                 properties:
                   data:
                     $ref: ../../components/schemas/Contact.yaml
+    '400':
+      description: Ошибка валидации
+      content:
+        application/json:
+          schema: { $ref: ../../components/schemas/ApiResponse.yaml }
+          examples:
+            badreq:
+              value: { status: error, message: "Validation error", data: { field: "name" } }
+    '401':
+      description: Не авторизовано
+      content:
+        application/json:
+          schema: { $ref: ../../components/schemas/ApiResponse.yaml }
+          examples:
+            unauth:
+              value: { status: error, message: "Not authorized", data: null }
