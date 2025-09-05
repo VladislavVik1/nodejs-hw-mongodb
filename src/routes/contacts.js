@@ -12,50 +12,50 @@ import { addContactSchema, updateContactSchema } from '../schemas/contactSchemas
 import validateBody from '../middlewares/validateBody.js';
 import isValidId from '../middlewares/isValidId.js';
 import { uploadPhoto, uploadToCloudinary } from '../middlewares/uploadPhoto.js';
-// import authenticate from '../middlewares/authenticate.js'; // ← розкоментуй, якщо маршрути мають бути захищені
+import authenticate from '../middlewares/authenticate.js';
 
 const router = express.Router();
 
-// GET /contacts — список
+// GET /contacts — список (пагинация/фильтры/сортировка из req.query)
 router.get(
   '/',
-  // authenticate,
+  authenticate,
   ctrlWrapper(fetchAllContacts)
 );
 
-// POST /contacts — створити (з фото)
+// POST /contacts — создать (multipart/form-data с файлом photo)
 router.post(
   '/',
-  // authenticate,
-  uploadPhoto,             // 1) приймаємо файл у полі "photo" (multer memory)
-  uploadToCloudinary,      // 2) заливаємо у Cloudinary, кладемо URL у req.body.photo
-  validateBody(addContactSchema), // 3) валідація тіла (photo — це URL)
-  ctrlWrapper(createContactCtrl)  // 4) контролер створення
+  authenticate,
+  uploadPhoto,            // принимает файл в поле "photo" (multer.memoryStorage)
+  uploadToCloudinary,     // кладёт URL в req.body.photo
+  validateBody(addContactSchema), // Joi ожидает уже URL в req.body.photo
+  ctrlWrapper(createContactCtrl)
 );
 
 // GET /contacts/:contactId — один контакт
 router.get(
   '/:contactId',
-  // authenticate,
+  authenticate,
   isValidId,
   ctrlWrapper(getContactCtrl)
 );
 
-// PATCH /contacts/:contactId — оновити (можна нове фото)
+// PATCH /contacts/:contactId — обновить (multipart/form-data; опционально новое фото)
 router.patch(
   '/:contactId',
-  // authenticate,
+  authenticate,
   isValidId,
-  uploadPhoto,                // (опційно) нове фото
-  uploadToCloudinary,         // якщо є файл — отримаємо req.body.photo = URL
+  uploadPhoto,
+  uploadToCloudinary,     // если файл пришёл — в req.body.photo будет URL
   validateBody(updateContactSchema),
   ctrlWrapper(updateContactCtrl)
 );
 
-// DELETE /contacts/:contactId — видалити
+// DELETE /contacts/:contactId — удалить (контроллер должен вернуть 204 No Content)
 router.delete(
   '/:contactId',
-  // authenticate,
+  authenticate,
   isValidId,
   ctrlWrapper(deleteContactCtrl)
 );

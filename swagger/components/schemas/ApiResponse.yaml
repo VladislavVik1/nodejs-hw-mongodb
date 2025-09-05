@@ -1,11 +1,21 @@
 type: object
+required:
+  - status
+  - message
+  - data
 properties:
   status:
     type: string
+    enum: [success, error]
     example: success
   message:
     type: string
     example: Operation completed successfully
   data:
-    type: object
+    description: Корисне навантаження відповіді; може бути null, якщо нічого повертати
     nullable: true
+    type: object
+example:
+  status: success
+  message: Contacts list
+  data: {}

@@ -1,10 +1,21 @@
 type: object
 description: Передаём только изменяемые поля
 properties:
-  name: { type: string }
-  phoneNumber: { type: string }
-  email: { type: string, format: email }
-  isFavourite: { type: boolean }
-  photo: { type: string, format: uri }
-  contactType: { type: string, enum: [work, home, personal] }
+  name:
+    type: string
+  phoneNumber:
+    type: string
+  email:
+    type: string
+    format: email
+  isFavourite:
+    type: boolean
+  contactType:
+    type: string
+    enum: [work, home, personal]
+  photo:
+    type: string
+    format: binary
+    description: Новый файл изображения (multipart/form-data)
 minProperties: 1
+additionalProperties: false
